@@ -1,0 +1,7 @@
+@InProceedings{mvdepthnet,
+    author       = "K. Wang and S. Shen",
+    title        = {{MVDepthNet}: real-time multiview depth estimation neural network},
+    booktitle    = "International Conference on 3D Vision (3DV)",
+    month        = "Sep.",
+    year         = "2018",
+  }

@@ -1,0 +1,10 @@
+@article{teach_repeat, 
+    author={F. Gao and L. Wang and K. Wang and W. Wu and B. Zhou and L. Han and S. Shen}, 
+    journal={IEEE Robotics and Automation Letters}, 
+    title={Optimal Trajectory Generation for Quadrotor Teach-and-Repeat}, 
+    year={2019}, 
+    volume={4}, 
+    number={2}, 
+    pages={1493-1500},
+    month={April}
+}

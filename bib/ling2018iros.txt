@@ -1,0 +1,6 @@
+@InProceedings{ling2018iros,
+    author       = "Y. Ling and K. Wang and W. Ding and S. Shen",
+    title        = {Probabilistic dense reconstruction from a moving camera},
+    booktitle    = "Proc. of the International Conference on Intelligent Robot Systems (IROS)",
+    year         = "2018",
+  }

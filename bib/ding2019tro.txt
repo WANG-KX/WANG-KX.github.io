@@ -1,0 +1,9 @@
+@article{ding2019tro, 
+    author={W. Ding and W. Gao and K. Wang and S. Shen}, 
+    journal={IEEE Transactions on Robotics (T-RO)}, 
+    title={An Efficient B-Spline-Based Kinodynamic Replanning Framework for Quadrotors}, 
+    year={2019}, 
+    volume={}, 
+    number={}, 
+    pages={1-20},
+}

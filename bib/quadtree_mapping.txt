@@ -1,0 +1,6 @@
+@InProceedings{quadtree_mapping,
+    author       = "K. Wang and W. Ding and S. Shen",
+    title        = {Quadtree-accelerated Real-time Monocular Dense Mapping},
+    booktitle    = "Proc. of the International Conference on Intelligent Robot Systems (IROS)",
+    year         = "2018",
+  }

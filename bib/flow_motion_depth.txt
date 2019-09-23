@@ -1,0 +1,6 @@
+@article{flow_motion_depth,
+  title={{Flow-Motion and Depth Network for Monocular Stereo and Beyond}},
+  author={K. Wang and S. Shen},
+  journal={arXiv preprint arXiv:1909.05452},
+  year={2019}
+}

@@ -1,0 +1,6 @@
+@InProceedings{pibhole_fisheye,
+    author       = "K. Wang and S. Shen",
+    title        = {Adaptive Baseline Monocular Dense Mapping with Inter-frame Depth Propagation},
+    booktitle    = "Proc. of the International Conference on Intelligent Robot Systems (IROS)",
+    year         = "2018",
+  }

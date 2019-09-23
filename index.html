@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Wang Kaixuan, 3D vision and Robotics</title>
+<link href="css.css" rel="stylesheet" type="text/css" />
+</head>
+<!-- <meta charset="UTF-8"> -->
+
+<body>
+<div id="main">
+<!-- <div id="top-nav">
+<b>Wang Kaixuan</b>
+
+<small>, Ph.D. Student on 3D Vision and Robotics</small>
+</div> -->
+
+<div id="content">
+
+<a name="Home"></a>
+<h1>Wang Kaixuan (王凯旋)<br />Ph.D. Student on 3D Vision and Robotics</h1>
+<br />
+<p align="justify">
+<img border="0" src="images/myPhoto.jpg" align="left" height="250px" style="padding-right: 20px;padding-bottom: 20px" />
+
+I am a Ph.D. student at <a href="http://uav.ust.hk/">UAV Group</a>, HKUST, supervised by <a href="http://uav.ust.hk/group/">Prof. Shaojie Shen</a>. My research includes depth estimation using monocular cameras, deep learning, and 3D reconstruction. During the past years, I have been developing methods to build a pipeline from images to dense 3D maps for robotic navigation, especially for UAVs. Most of the past work is open source on GitHub for the benefit of the community.
+
+</p>
+<p>
+In this page, you can find a summary of my past projects and published papers.
+
+</p>
+<p>
+<b>Link: </b>
+<a href="https://github.com/WANG-KX"><img border="0" src="images/gh.png" height="13px" /> GitHub</a>,
+<a href="https://scholar.google.com/citations?user=mSyd3BcAAAAJ"><img border="0" src="images/scholar.png" height="13px" />
+Google Scholar</a>, <a href="https://www.youtube.com/channel/UCjeo3nQ31b9SJMqMSnyUj3Q"><img border="0" src="images/yt.png"
+height="13px" /> Personal</a>, <a href="https://www.youtube.com/channel/UCUc35anCXfPI5U763nWbyKw"><img border="0"
+src="images/yt.png" height="13px" />Group</a>
+
+<br />
+<b>Contact: </b>
+<a href="mailto:kwangap@ust.hk">kwangap@ust.hk</a>
+
+<br />
+<b>CV: </b>
+<a href="pdf/CV.pdf"><img border="0" src="images/pdf.png" height="13px" />MyCV</a>
+
+<br />
+
+<a name="Projects"></a>
+<br />
+<h1>Project Highlights</h1>
+
+<h2>Monocular Dense Mapping</h2>
+
+<p align="justify"><b>Monocular Dense Mapping</b> aims to estimated dense depth maps using images from only one monocular camera. Compared with the widely used stereo perception, the one camera solution has the advantags of sensor size, weight and no need for extrinsic calibration. Using the visual inertial odometry method (e.g. <a href="https://github.com/HKUST-Aerial-Robotics/VINS-Mono">VINS</a>), UAV autonomous navigation can be demonstrated using only one camera and one IMU (see figure for an example).
+</p>
+<table align='center'>
+<tr>
+<td><img src="images/drone.png" height="200" align="center" />
+<td><iframe height="200" src="https://www.youtube.com/embed/obwV1PFuPC0?start=84" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+ allowfullscreen></iframe>
+</tr>
+</table>
+<p>
+Two methods are developed to calculate the depth map using belief propagation. One method, <a href="https://github.com/HKUST-Aerial-Robotics/Pinhole-Fisheye-Mapping">Pinhole-Fisheye-Mapping</a>, focuses on the varying baseline utilization for robust depth estimation. Another method, <a href="https://github.com/HKUST-Aerial-Robotics/open_quadtree_mapping">Quadtree-Mapping</a>, uses the quadtree structure of the image to speed up the depth global optimization. Benefiting from the development of deep learning methods, we also proposed <a href="https://github.com/HKUST-Aerial-Robotics/MVDepthNet">MVDepthNet</a> that can estimate depth maps using one monocular camera in real time. All the above methods have been applied on real UAV systems and demonstrated their usability.
+</p>
+
+
+<table align='center'>
+<tr>
+<td><iframe width="200" src="https://www.youtube.com/embed/5zkkEMZaono?start=102" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+allowfullscreen></iframe>
+<td><iframe width="200" src="https://www.youtube.com/embed/GMlOvgewfeE?start=31" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+allowfullscreen></iframe>
+<td><iframe width="200" src="https://www.youtube.com/embed/8jUlN-ZROl0?start=157" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+allowfullscreen></iframe>
+</tr>
+</table>
+
+<h2>Surfel-based 3D Reconstruction</h2>
+<p align="justify"><b>3D reconstruction</b> needs more than depth images with estimated camera poses. Since there exist noises in depth maps and estimated camera poses will drift in the long term, a proper 3d fusion method is needed to build a dense, globally consistent model for visualization and path planning. <a href="https://github.com/HKUST-Aerial-Robotics/DenseSurfelMapping">SurfelMapping</a> is a reconstruction method that can work with state-of-the-art SLAM methods (e.g., VINS, ORB-SLAM). The map is represented as a collection of surfels such that it can be deformed efficiently according to the pose graph optimization of SLAM systems. Unlike ElasticFusion which model surfel for each pixel, we estimate surfels for extracted superpixels to gain efficiency. SurfelMapping is capable of reconstructing the KITTI dataset in real time without GPU acceleration.
+<table align='center'>
+<tr>
+<td><iframe width="560" height="315" src="https://www.youtube.com/embed/2gZNpFE_yI4?start=120" frameborder="0"
+	allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</tr>
+</table>
+</p>
+
+<h2>Deep Learning for 3D Vision</h2>
+<p align="justify"><b>Deep learning</b> has been developed a lot in recent years. Some of my work tries to solve 3D vision problems by using learning methods. <a href="https://github.com/HKUST-Aerial-Robotics/MVDepthNet">MVDepthNet</a> is one of the first methods that use networks to solve multiview stereo problems but is the only one that is designed for real-time performance. MVDepthNet is further used by Magic Leap in <a href="https://arxiv.org/pdf/1904.11595.pdf">DeepPerimeter</a> for indoor reconstruction. <a href="https://github.com/HKUST-Aerial-Robotics/Flow-Motion-Depth">Flow-Motion-Depth</a> solves the motion stereo problem by a carefully designed network that can estimate depth maps and camera motions given two images. I also take a deep study into monocular depth prediction. Since the quantity of available datasets for depth learning is quite limited, we propose <a href="https://github.com/HKUST-Aerial-Robotics/GeometricPretraining">GeometricPretraining</a> that can pretrain networks with unlimited internet videos. With the pretrained networks, we achieve new state-of-the-art performance. The performance is demonstrated in the following:
+<table align='center'>
+<tr>
+<td><iframe width="300" src="https://www.youtube.com/embed/wlobHEpPXDU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+	allowfullscreen></iframe>
+<td><iframe width="300" src="https://www.youtube.com/embed/5AKuyMUk4w8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+	allowfullscreen></iframe>
+</tr>
+</table>
+</p>
+
+<br />
+<a name="Publications"></a>
+<h1>Publications</h1>
+
+<p>
+<img border="0" src="pdf_img/flow-motion-depth.png" align="left" width="80px" style="padding-right: 10px;padding-bottom: 0px" />
+<b>Flow-Motion and Depth Network for Monocular Stereo and Beyond</b> (K. Wang and S. Shen), arxiv: 1909.05452.
+<br />
+<a href="pdf/flow_motion_depth.pdf"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="pdf/flow_motion_depth_sup.pdf"><img border="0" src="images/pdf.png" height="13px" /> [supplementary pdf]</a>
+<a href="bib/flow_motion_depth.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://github.com/HKUST-Aerial-Robotics/Flow-Motion-Depth"><img border="0" src="images/gh.png" height="13px" />[code]</a>
+<a href="https://arxiv.org/abs/1909.05452"><img border="0" src="images/arxiv.png" height="13px" /> [2019 arXiv version]</a>
+</p>
+
+<p>
+<img border="0" src="pdf_img/surfel_mapping.png" align="left" width="80px" height="50px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>Real-time Scalable Dense Surfel Mapping</b> (K. Wang and F. Gao and S. Shen), In <i>IEEE International
+Conference on Robotics and Automation (ICRA)</i>, 2019.
+<br />
+<a href="pdf/surfel_fusion.pdf"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="bib/surfel_fusion.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://www.youtube.com/watch?v=2gZNpFE_yI4"><img border="0" src="images/yt.png" height="13px" /> [video]</a>
+<a href="https://arxiv.org/abs/1909.04250"><img border="0" src="images/arxiv.png" height="13px" /> [2019 arXiv version]</a>
+<a href="https://github.com/HKUST-Aerial-Robotics/DenseSurfelMapping"><img border="0" src="images/gh.png" height="13px" />[code]</a>
+</p>
+
+<p>
+<img border="0" src="images/drone.png" align="left" width="80px" height="50px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>An Efficient B-spline-Based Kinodynamic Replanning Framework for Quadrotors</b> (W. Ding and W. Gao and K. Wang and S. Shen), In <i>IEEE Transactions on Robotics (T-RO)</i>, 2019.
+<br />
+<a href="https://ieeexplore.ieee.org/document/8811597"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="bib/ding2019tro.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://www.youtube.com/watch?v=sg46XT9-o1k"><img border="0" src="images/yt.png" height="13px" /> [video]</a>
+<a href="https://arxiv.org/abs/1906.09785"><img border="0" src="images/arxiv.png" height="13px" /> [2019 arXiv version]</a>
+</p>
+
+<p>
+<img border="0" src="pdf_img/teach_repeat.png" align="left" width="80px" height="50px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>Optimal Trajectory Generation for Quadrotor Teach-and-Repeat </b> (F. Gao and L. Wang and K. Wang and W. Wu and B. Zhou and L. Han and S. Shen), In <i>IEEE Robotics and Automation Letters</i>, 2019.
+<br />
+<a href="https://ieeexplore.ieee.org/document/8625495"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="bib/teach_repeat.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://www.youtube.com/watch?v=UUu_eK26EP0"><img border="0" src="images/yt.png" height="13px" /> [video]</a>
+<a href="https://github.com/HKUST-Aerial-Robotics/Teach-Repeat-Replan"><img border="0" src="images/gh.png" height="13px" />[code]</a>
+
+</p>
+
+<p>
+<img border="0" src="pdf_img/mvdepthnet.png" align="left" width="80px" height="50px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>MVDepthNet: real-time multiview depth estimation neural network</b> (K. Wang and S. Shen), In <i>International
+Conference on 3D Vision (3DV)</i>, 2018, <b>Oral</b>.
+<br />
+<a href="pdf/mvdepthnet.pdf"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="bib/mvdepthnet.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://www.youtube.com/watch?v=X540oWQnVko"><img border="0" src="images/yt.png" height="13px" /> [video]</a>
+<a href="https://arxiv.org/abs/1807.08563"><img border="0" src="images/arxiv.png" height="13px" /> [2018 arXiv version]</a>
+<a href="https://github.com/HKUST-Aerial-Robotics/MVDepthNet"><img border="0" src="images/gh.png" height="13px" />[code]</a>
+</p>
+
+<p>
+<img border="0" src="pdf_img/pinhole_fisheye.png" align="left" width="80px" height="100px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>Adaptive Baseline Monocular Dense Mapping with Inter-frame Depth Propagation</b> (K. Wang and S. Shen), In <i>The
+IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</i>, 2018.
+<br />
+<a href="pdf/pinhole_fisheye.pdf"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="bib/pinhole_fisheye.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://www.youtube.com/watch?v=5zkkEMZaono"><img border="0" src="images/yt.png" height="13px" /> [video]</a>
+<a href="https://github.com/HKUST-Aerial-Robotics/Pinhole-Fisheye-Mapping"><img border="0" src="images/gh.png" height="13px" />code]</a>
+<br />
+<br />
+<br />
+</p>
+
+<p>
+<img border="0" src="pdf_img/quadtree_mapping.png" align="left" width="80px" height="70px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>Quadtree-accelerated Real-time Monocular Dense Mapping</b> (K. Wang and W. Ding and S. Shen), In <i>The
+IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</i>, 2018.
+<br />
+<a href="pdf/quadtree_mapping.pdf"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="bib/quadtree_mapping.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://www.youtube.com/watch?v=GMlOvgewfeE"><img border="0" src="images/yt.png" height="13px" /> [video]</a>
+<a href="https://github.com/HKUST-Aerial-Robotics/open_quadtree_mapping"><img border="0" src="images/gh.png"
+height="13px" />[code]</a>
+
+</p>
+
+<p>
+<img border="0" src="pdf_img/ling2018iros.png" align="left" width="80px" height="70px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>Probabilistic dense reconstruction from a moving camera</b> (Y. Ling and K. Wang and W. Ding and S. Shen), In
+<i>The IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</i>, 2018.
+<br />
+<a href="https://ieeexplore.ieee.org/document/8593618"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="bib/ling2018iros.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://www.youtube.com/watch?v=XhEkYZujoKA"><img border="0" src="images/yt.png" height="13px" /> [video]</a>
+<a href="https://github.com/HKUST-Aerial-Robotics/probabilistic_mapping"><img border="0" src="images/gh.png"
+height="13px" />[code]</a>
+
+</p>
+
+<p>
+<img border="0" src="images/drone.png" align="left" width="80px" height="50px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>Trajectory replanning for quadrotors using kinodynamic search and elastic optimization</b> (W. Ding and W. Gao
+and K. Wang and S. Shen), In <i>IEEE International Conference on Robotics and Automation (ICRA)</i>, 2018.
+<br />
+<a href="https://ieeexplore.ieee.org/document/8463188"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+<a href="bib/ding2018icra.txt"><img border="0" src="images/bib.png" height="13px" /> [bib]</a>
+<a href="https://www.youtube.com/watch?v=obwV1PFuPC0"><img border="0" src="images/yt.png" height="13px" /> [video]</a>
+<a href="https://arxiv.org/abs/1903.01139"><img border="0" src="images/arxiv.png" height="13px" /> [2019 arXiv version]</a>
+</p>
+
+<h3>Undergraduate Projects</h3>
+
+<p>
+<img border="0" src="pdf_img/control.png" align="left" width="80px" height="50px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>Spherical Formation Tracking Control of Second-Order Nonlinear Agents With Directed Communication</b> (Y. Chen
+and K. Wang and Y. Zhang), In <i>12th IEEE International Conference on Control & Automation (ICCA)</i>, 2016.
+<br />
+<a href="https://ieeexplore.ieee.org/document/7505334"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+</p>
+
+<p>
+<img border="0" src="pdf_img/control.png" align="left" width="80px" height="50px" style="padding-right: 10px;padding-bottom: 20px" />
+<b>A geometric extension design for second-order nonlinear agents formation surrounding a sphere</b> (Y. Chen and K. Wang and Y. Zhang and C. Liu and Q. Wang), In <i>Chinese Control and Decision Conference (CCDC)</i>, 2016.
+<br />
+<a href="https://ieeexplore.ieee.org/document/7505334"><img border="0" src="images/pdf.png" height="13px" /> [pdf]</a>
+</p>
+
+
+</div>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+@InProceedings{surfelfusion,
+	title = "Real-time Scalable Dense Surfel Mapping",
+	author = "K. Wang and F. Gao and S. Shen",
+	booktitle = "International Conference on Robotics and Automation (ICRA)",
+	year = "2019",
+}

@@ -1,0 +1,6 @@
+@InProceedings{geopretrain,
+	title = "Geometric Pretraining for Monocular Depth Estimation",
+	author = "K. Wang and Y. Chen and H. Guo and L. Wen and S. Shen",
+	booktitle = "International Conference on Robotics and Automation (ICRA)",
+	year = "2020",
+}

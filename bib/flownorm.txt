@@ -1,0 +1,6 @@
+@InProceedings{geopretrain,
+	title = "FlowNorm: A Learning-based Method for Increasing Convergence Range of Direct Alignment",
+	author = "K. Wang, K. Wang and S. Shen",
+	booktitle = "International Conference on Robotics and Automation (ICRA)",
+	year = "2020",
+}

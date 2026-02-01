@@ -1,0 +1,8 @@
+title: "Wang Kaixuan Blog"
+description: "Wang Kaixuan's Weekly Blog"
+baseurl: "/blog"
+url: "https://wang-kx.github.io"
+lang: zh-CN
+markdown: kramdown
+paginate: 5
+permalink: /posts/:year/:month/:day/:title/

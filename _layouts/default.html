@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>{{ page.title }} | {{ site.title }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="{{ page.excerpt | default: site.description }}" />
+<style>
+    :root {
+        font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+        background-color: #f8fafc;
+        color: #0f172a;
+        line-height: 1.7;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f8fafc;
+    }
+    .page {
+        min-height: 100vh;
+        padding: 3rem 1.5rem 4rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .card {
+        background: #ffffff;
+        border-radius: 1.25rem;
+        padding: 2rem;
+        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1);
+    }
+    header, footer {
+        margin-bottom: 2rem;
+        text-align: center;
+        color: #475467;
+    }
+    h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 2.6rem);
+    }
+    a {
+        color: #312e81;
+        text-decoration: none;
+    }
+    .posts {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .post-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 1.25rem 1.5rem;
+        background: #fdfdfd;
+    }
+    .post-card h2 {
+        margin: 0;
+        font-size: 1.35rem;
+        color: #0f172a;
+    }
+    .post-meta {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-top: 0.35rem;
+    }
+    /* Global navigation styles */
+    .nav {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    .nav a {
+        color: #312e81;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 0.35rem 0.6rem;
+        border-radius: 999px;
+        background: #eef2ff;
+    }
+    .nav a:hover {
+        background: #e0e7ff;
+    }
+    @media (max-width: 600px) {
+        .page {
+            padding: 2rem 1rem 3rem;
+        }
+        .card {
+            padding: 1.25rem;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="page">
+    <header>
+        <p>Wang Kaixuan / 3D Vision & Robotics</p>
+        <h1>{{ page.title }}</h1>
+        <p>{{ site.description }}</p>
+        <nav class="nav">
+            <a href="/">首页</a>
+            <a href="{{ '/' | relative_url }}">博客</a>
+            <a href="https://github.com/WANG-KX" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </nav>
+    </header>
+    <div class="card">
+        {{ content }}
+    </div>
+    <footer>
+        <p>© 2026 Wang Kaixuan · GitHub Pages</p>
+    </footer>
+</div>
+</body>
+</html>

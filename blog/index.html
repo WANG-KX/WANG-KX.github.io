@@ -1,0 +1,16 @@
+---
+layout: default
+title: 博客
+permalink: /blog/
+---
+<p style="margin-bottom:1rem;">每周记录</p>
+<div class="posts">
+  {% for post in site.posts %}
+  <article class="post-card">
+      <a href="{{ post.url | relative_url }}">
+          <h2>{{ post.title }}</h2>
+      </a>
+      <p class="post-meta">{{ post.date | date: "%Y-%m-%d" }} · {{ post.excerpt | strip_html | truncate: 120 }}</p>
+  </article>
+  {% endfor %}
+</div>

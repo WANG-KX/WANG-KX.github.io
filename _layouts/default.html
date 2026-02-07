@@ -91,17 +91,38 @@
             padding: 1.25rem;
         }
     }
+    
+    /* 优化粗体与斜体的中文混排体验 */
+    strong, b, em, i {
+        margin: 0 0.15em; /* 在文字左右各增加 0.15 个字宽的间距 */
+        color: #0f172a;   /* 可选：确保强调文字颜色足够深 */
+    }
+    
+    /* 美化 Markdown 引用块 */
+    blockquote {
+        margin: 1.5rem 0;       /* 上下与其他段落保持距离 */
+        padding: 1rem 1.5rem;   /* 内部增加留白 */
+        background-color: #f1f5f9; /* 浅灰色背景 (Slate-100) */
+        border-left: 5px solid #64748b; /* 左侧灰色竖线强调 (Slate-500) */
+        border-radius: 0 8px 8px 0; /* 右侧圆角，增加现代感 */
+        color: #475569;         /* 文字颜色稍淡 (Slate-600) */
+    }
+    
+    /* 去除引用块内部段落的默认边距，避免上下留白过多 */
+    blockquote p {
+        margin: 0;
+    }
 </style>
 </head>
 <body>
 <div class="page">
     <header>
         <p>Wang Kaixuan / 3D Vision & Robotics</p>
-        <h1>{{ page.title }}</h1>
+        <h1>{% if page.layout == 'post' %}Wang Kaixuan Blog{% else %}{{ page.title }}{% endif %}</h1>
         <p>{{ site.description }}</p>
         <nav class="nav">
             <a href="/">首页</a>
-            <a href="{{ '/' | relative_url }}">博客</a>
+            <a href="{{ '/blog/' | relative_url }}">博客</a>
             <a href="https://github.com/WANG-KX" target="_blank" rel="noopener noreferrer">GitHub</a>
         </nav>
     </header>

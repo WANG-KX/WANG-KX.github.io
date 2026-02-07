@@ -1,6 +1,6 @@
 title: "Wang Kaixuan Blog"
-description: "Wang Kaixuan's Weekly Blog"
-baseurl: "/blog"
+description: ""
+baseurl: ""
 url: "https://wang-kx.github.io"
 lang: zh-CN
 markdown: kramdown

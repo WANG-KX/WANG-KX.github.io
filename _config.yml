@@ -5,3 +5,5 @@ url: "https://wang-kx.github.io"
 lang: zh-CN
 markdown: kramdown
 permalink: /posts/:year/:month/:day/:title/
+
+google_analytics: "G-ZTWSKJ1WGD"

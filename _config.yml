@@ -1,5 +1,5 @@
 title: "Wang Kaixuan Blog"
-description: ""
+description: "王凯旋的个人博客，分享 3D 视觉、机器人、具身智能和 AI 领域的思考与周报。"
 baseurl: ""
 url: "https://wang-kx.github.io"
 lang: zh-CN
@@ -7,3 +7,6 @@ markdown: kramdown
 permalink: /posts/:year/:month/:day/:title/
 
 google_analytics: "G-ZTWSKJ1WGD"
+
+plugins:
+  - jekyll-sitemap

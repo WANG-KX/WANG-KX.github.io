@@ -4,7 +4,14 @@
 <meta charset="UTF-8" />
 <title>{{ page.title }} | {{ site.title }}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="{{ page.excerpt | default: site.description }}" />
+<meta name="description" content="{{ page.excerpt | default: site.description | strip_html | strip_newlines | truncate: 160 }}" />
+<link rel="canonical" href="{{ page.url | prepend: site.url }}" />
+<!-- Open Graph -->
+<meta property="og:title" content="{{ page.title }}" />
+<meta property="og:description" content="{{ page.excerpt | default: site.description | strip_html | strip_newlines | truncate: 160 }}" />
+<meta property="og:url" content="{{ page.url | prepend: site.url }}" />
+<meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}" />
+<meta property="og:site_name" content="{{ site.title }}" />
 <style>
     :root {
         font-family: "Noto Sans SC", "PingFang SC", sans-serif;

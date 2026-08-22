@@ -1,0 +1,788 @@
+---
+layout: post
+title: AI 推理芯片深度调研报告 2026
+date: 2026-08-17
+tags: [投资调研, AI芯片]
+excerpt: 推理芯片市场正在从 GPU 一统天下走向多元化竞争。本报告深入分析推理负载特征、芯片设计权衡、主流与新兴芯片架构，并给出基于性价比的投资判断框架。
+---
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+/* 为这篇文章创建独立的样式命名空间，避免与博客主题冲突 */
+.ai-chip-report {
+  --bg:#fff; --sf:#f8f9fa; --sf2:#f1f3f5; --bd:#dee2e6; --bdl:#e9ecef;
+  --t1:#1c1e21; --t2:#495057; --t3:#868e96;
+  --ac:#3b5bdb; --acb:#edf2ff; --acd:#4c6ef5;
+  --gn:#2f9e44; --gnb:#ebfbee;
+  --am:#e67700; --amb:#fff3bf;
+  --rd:#c92a2a; --rdb:#fff5f5;
+  --pu:#7048e8; --pub:#f3f0ff;
+  --cy:#0c8599; --cyb:#e3fafc;
+  --mn:'JetBrains Mono',monospace;
+}
+.ai-chip-report *,
+.ai-chip-report *::before,
+.ai-chip-report *::after {
+  box-sizing:border-box;
+}
+.ai-chip-report {
+  font-family:'Inter',-apple-system,sans-serif;
+  line-height:1.7;
+  font-size:15px;
+}
+.ai-chip-report a{color:var(--ac);text-decoration:none}
+.ai-chip-report a:hover{text-decoration:underline}
+.ai-chip-report .sec{padding:48px 0}
+.ai-chip-report .sec+.sec{border-top:1px solid var(--bdl)}
+.ai-chip-report h2{font-size:1.6rem;font-weight:700;letter-spacing:-.025em;margin-bottom:6px}
+.ai-chip-report h3{font-size:1.1rem;font-weight:600;margin-bottom:6px;margin-top:36px}
+.ai-chip-report h4{font-size:.92rem;font-weight:600;color:var(--t2)}
+.ai-chip-report p{color:var(--t2);margin-bottom:.9em}
+.ai-chip-report p:last-child{margin-bottom:0}
+.ai-chip-report ul{margin-left:24px;color:var(--t2);line-height:1.9}
+.ai-chip-report .tag{font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:var(--acb);color:var(--ac);display:inline-block;margin-bottom:14px}
+.ai-chip-report .tag.green{background:var(--gnb);color:var(--gn)}
+.ai-chip-report .tag.amber{background:var(--amb);color:var(--am)}
+.ai-chip-report .tag.red{background:var(--rdb);color:var(--rd)}
+.ai-chip-report .tag.purple{background:var(--pub);color:var(--pu)}
+.ai-chip-report .tag.cyan{background:var(--cyb);color:var(--cy)}
+.ai-chip-report .lead{font-size:1.05rem;color:var(--t2);max-width:700px;margin-top:10px;line-height:1.75}
+.ai-chip-report .grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.ai-chip-report .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+@media(max-width:700px){
+  .ai-chip-report .grid2,.ai-chip-report .grid3{grid-template-columns:1fr}
+}
+.ai-chip-report .card{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:22px;position:relative}
+.ai-chip-report .card h4{margin-bottom:8px}
+.ai-chip-report .chip-card{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:18px}
+.ai-chip-report .chip-card .label{font-size:.75rem;font-weight:600;color:var(--t3);margin-bottom:4px}
+.ai-chip-report .chip-card .val{font-size:1.6rem;font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums}
+.ai-chip-report .chip-card .val .unit{font-size:.8rem;font-weight:500;color:var(--t2);margin-left:4px}
+.ai-chip-report .chip-card .sub{font-size:.82rem;color:var(--t3);margin-top:4px}
+.ai-chip-report .tbl{width:100%;border-collapse:collapse;margin:24px 0;font-size:.9rem}
+.ai-chip-report .tbl thead{background:var(--sf2);border-bottom:2px solid var(--bd)}
+.ai-chip-report .tbl th{font-weight:600;text-align:left;padding:10px 14px;font-size:.82rem;color:var(--t2)}
+.ai-chip-report .tbl td{padding:10px 14px;border-bottom:1px solid var(--bdl)}
+.ai-chip-report .tbl tr:last-child td{border-bottom:none}
+.ai-chip-report .tbl code{font-family:var(--mn);font-size:.85em;background:var(--sf);padding:2px 5px;border-radius:3px}
+.ai-chip-report .mono{font-family:var(--mn);font-size:.88em;background:var(--sf);padding:2px 6px;border-radius:3px}
+.ai-chip-report .calc{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:24px;margin:28px 0}
+.ai-chip-report .calc-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.ai-chip-report .calc-row label{font-size:.88rem;font-weight:500;color:var(--t2);min-width:140px}
+.ai-chip-report .calc-row input,.ai-chip-report .calc-row select{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--bd);border-radius:4px;font-size:.9rem;font-family:inherit}
+.ai-chip-report .calc-row input:focus,.ai-chip-report .calc-row select:focus{outline:none;border-color:var(--ac)}
+.ai-chip-report .calc-row input[type="range"]{flex:1;min-width:200px;height:6px;padding:0;background:var(--bdl);border-radius:3px;-webkit-appearance:none;appearance:none}
+.ai-chip-report .calc-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--ac);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.ai-chip-report .calc-row input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ac);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.ai-chip-report .calc-result{background:var(--acb);border-left:3px solid var(--ac);padding:14px 18px;border-radius:4px;margin-top:20px}
+.ai-chip-report .note{background:var(--amb);border-left:3px solid var(--am);padding:14px 18px;border-radius:4px;font-size:.88rem;margin:18px 0}
+</style>
+
+<div class="ai-chip-report">
+
+<div class="sec">
+<p class="lead">推理芯片市场正在从 GPU 一统天下走向多元化竞争。本报告深入分析推理负载特征、芯片设计权衡、主流与新兴芯片架构，并给出基于性价比的投资判断框架。</p>
+</div>
+
+<!-- 市场规模 -->
+<div class="sec" id="market">
+<span class="tag green">市场</span>
+<h2>推理量的指数增长</h2>
+<p>Token 消耗量是推理市场最直接的底层指标。以下数据来自顶级厂商的公开披露，而非第三方机构预测。</p>
+
+<!-- 关键数字卡片 -->
+<div class="grid3" style="margin-top:24px">
+<div class="chip-card">
+  <div class="label">OpenAI API</div>
+  <div class="val" style="font-size:1.3rem">15B<span class="unit">tokens/min</span></div>
+  <div class="sub">2026年2月披露，≈ 21.6P tokens/day</div>
+</div>
+<div class="chip-card">
+  <div class="label">Google Cloud API</div>
+  <div class="val" style="font-size:1.3rem">23T<span class="unit">tokens/day</span></div>
+  <div class="sub">2026年4月，同比 Q3 2025 增 60%</div>
+</div>
+<div class="chip-card">
+  <div class="label">中国市场总量</div>
+  <div class="val" style="font-size:1.3rem">140T<span class="unit">tokens/day</span></div>
+  <div class="sub">2026年3月，较2024年初增长1000×</div>
+</div>
+</div>
+
+<!-- Token增长趋势图 -->
+<h3 style="margin-top:36px;margin-bottom:16px">全球推理量：从千亿到百万亿 tokens/day</h3>
+<div style="position:relative;background:var(--sf);border:1px solid var(--bdl);border-radius:8px;padding:24px">
+  <canvas id="tokenChart" height="220"></canvas>
+</div>
+
+<!-- 市场格局表格 -->
+<h3 style="margin-top:48px;margin-bottom:6px">当前推理芯片格局</h3>
+<p>推理市场由 <strong>NVIDIA GPU</strong> 主导，但超大厂商自研芯片正快速切走份额。以下是 2026 年全球推理算力的估算分布（按 token 计算量比例）：</p>
+
+<table class="tbl" style="margin-top:24px">
+<thead>
+<tr><th>阵营</th><th>代表芯片</th><th>估算份额</th><th>渠道</th><th>核心优势</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NVIDIA GPU</strong></td>
+<td>H100 / H200 / B200</td>
+<td><span style="font-weight:700;color:#3b5bdb">~74%</span></td>
+<td>云 / IDC / 企业</td>
+<td>生态、工具链、互联</td>
+</tr>
+<tr>
+<td><strong>超大厂自研</strong></td>
+<td>TPU / Trainium / MTIA</td>
+<td><span style="font-weight:700;color:#7048e8">~18%</span></td>
+<td>仅内部 / GCP外销</td>
+<td>内部流量成本最优</td>
+</tr>
+<tr>
+<td><strong>AMD GPU</strong></td>
+<td>MI300X / MI325X</td>
+<td><span style="font-weight:700;color:#2f9e44">~5%</span></td>
+<td>云 / 部分企业</td>
+<td>大内存、低价</td>
+</tr>
+<tr>
+<td><strong>专用推理芯片</strong></td>
+<td>Groq / Cerebras</td>
+<td><span style="font-weight:700;color:#e67700">~2%</span></td>
+<td>专属 API 服务</td>
+<td>极低延迟 / 极高吞吐</td>
+</tr>
+<tr>
+<td><strong>其他</strong></td>
+<td>Gaudi / 昇腾</td>
+<td><span style="font-weight:700;color:#868e96">~1%</span></td>
+<td>区域市场</td>
+<td>国产替代 / 成本</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- 推理 vs 训练 -->
+<div class="sec" id="inference-vs-training">
+<span class="tag purple">核心差异</span>
+<h2>推理负载与训练负载的本质区别</h2>
+
+<table class="tbl">
+<thead>
+<tr><th>维度</th><th>训练</th><th>推理</th><th>对芯片的影响</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>计算模式</strong></td><td>大批量并行 (batch ≥ 256)</td><td>小批量或单样本 (batch 1~16)</td><td>推理需要更低延迟</td></tr>
+<tr><td><strong>吞吐 vs 延迟</strong></td><td>吞吐优先，允许秒级延迟</td><td>延迟敏感，P99 < 100ms</td><td>推理芯片需要低延迟调度</td></tr>
+<tr><td><strong>内存访问</strong></td><td>反向传播需存储中间激活</td><td>仅前向推理，KV Cache 线性增长</td><td>推理瓶颈在<strong>存储带宽</strong></td></tr>
+<tr><td><strong>精度要求</strong></td><td>FP32 / BF16 / FP16</td><td>INT8 / FP8 / INT4 可接受</td><td>推理可用低精度换取 2-4× 吞吐</td></tr>
+<tr><td><strong>模型固定性</strong></td><td>频繁更新权重</td><td>权重固定，可离线优化</td><td>推理可用权重预加载、编译优化</td></tr>
+</tbody>
+</table>
+
+<h3 style="margin-top:36px">关键洞察：为什么推理瓶颈在带宽？</h3>
+<p>训练时每个 token 参与前向+反向两次矩阵乘，计算密集；推理分两阶段：</p>
+<ul>
+<li><strong>Prefill 阶段</strong>：输入所有 prompt tokens，计算密集，算力利用率高</li>
+<li><strong>Autoregressive (AR) 阶段</strong>：每次生成 1 个 token，需从 HBM 读取<strong>模型权重 + KV Cache</strong>（所有历史 token 的 K/V 向量），带宽即上限。对于 70B 模型 + 8K context：KV Cache ≈ 21 GB，模型权重 ≈ 140 GB（FP16），合计 ~161 GB 内存读取；若带宽 3 TB/s，单次耗时 ~54 ms。</li>
+</ul>
+
+<h3 style="margin-top:48px">多卡推理：三种并行策略对比</h3>
+<p>当单卡无法满足性能或容量需求时，需要多卡并行。三种主流策略在推理场景下各有优劣：</p>
+
+<table class="tbl" style="margin-top:20px">
+<thead>
+<tr><th style="width:15%">维度</th><th style="width:28%">数据并行</th><th style="width:28%">张量并行</th><th style="width:29%">流水线并行</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>模型分布</strong></td>
+<td>每卡存<strong>完整模型</strong>副本</td>
+<td>模型按<strong>层内维度</strong>切分（Attention heads、MLP 宽度）</td>
+<td>模型按<strong>层垂直</strong>切分（前N层在卡1，后N层在卡2）</td>
+</tr>
+<tr>
+<td><strong>通信模式</strong></td>
+<td><span style="color:var(--gn)">✅ 无模型通信</span></td>
+<td><span style="color:var(--am)">⚠️ 每层 all-reduce</span><br>通信量 ∝ hidden_dim × layers</td>
+<td><span style="color:var(--am)">⚠️ 层间传递激活值</span><br>通信量 ∝ hidden_dim × (N-1)</td>
+</tr>
+<tr>
+<td><strong>单请求延迟</strong></td>
+<td>= 单卡延迟<br>（无变化）</td>
+<td>= 单卡延迟 / N + 通信开销<br>（<span style="color:var(--gn)">可降低</span>，若通信快）</td>
+<td>≈ 单卡延迟 × (1 + 气泡率)<br>（<span style="color:var(--rd)">通常增加</span>）</td>
+</tr>
+<tr>
+<td><strong>总吞吐</strong></td>
+<td><span style="color:var(--gn)">线性扩展 N×</span><br>（效率 95%+）</td>
+<td>取决于通信瓶颈<br>理想 < N×，实际常 0.5-0.8N×</td>
+<td>取决于 batch 大小<br>大 batch 时接近 N×</td>
+</tr>
+<tr>
+<td><strong>显存需求</strong></td>
+<td>每卡需<strong>完整模型</strong><br>+ KV Cache</td>
+<td>每卡仅需<strong>1/N 模型</strong><br>+ 完整 KV Cache</td>
+<td>每卡仅需<strong>1/N 模型</strong><br>+ 完整 KV Cache</td>
+</tr>
+<tr>
+<td><strong>最佳场景</strong></td>
+<td>• 高并发 API 服务<br>• 单卡能装下模型<br>• 吞吐优先</td>
+<td>• 模型 > 单卡显存<br>• 高速互联（NVLink）<br>• 单用户低延迟</td>
+<td>• 训练或大 batch 推理<br>• Batch ≥ 8-16<br>• 吞吐优先</td>
+</tr>
+<tr>
+<td><strong>主要限制</strong></td>
+<td>模型必须 < 单卡显存</td>
+<td>• 通信开销 ∝ 层数<br>• 需高速互联（≥900GB/s）</td>
+<td>• <span style="color:var(--rd)">流水线气泡</span>：batch 小时利用率低<br>• 不适合单请求推理</td>
+</tr>
+<tr style="background:var(--acb)">
+<td><strong>推理推荐度</strong></td>
+<td><span style="font-size:1.2rem">⭐⭐⭐⭐⭐</span><br>首选方案</td>
+<td><span style="font-size:1.2rem">⭐⭐⭐⭐</span><br>大模型必选</td>
+<td><span style="font-size:1.2rem">⭐⭐</span><br>仅大 batch 场景</td>
+</tr>
+</tbody>
+</table>
+
+<div class="note" style="margin-top:24px;background:var(--pub);border-color:var(--pu)">
+<strong>💡 实际部署经验</strong><br><br>
+<strong>1. 数据并行是推理的默认选择</strong>：API 服务中 90% 的场景用数据并行，因为无通信开销、实现简单、吞吐线性扩展。<br><br>
+<strong>2. 张量并行用于超大模型</strong>：当模型 > 单卡显存（如 Llama 405B 需 4-8 卡），张量并行是唯一选择。关键是卡间互联速度——H100 的 NVLink 900GB/s 可将通信开销控制在 10-20ms，可接受。<br><br>
+<strong>3. 流水线并行在推理中少用</strong>：流水线气泡在小 batch（1-4）时会浪费 50-70% 算力。只有当 batch ≥ 16 且模型极大（> 100B）时才考虑。Google、Meta 等大厂内部会混合使用张量+流水线并行（2D 并行）来支持千亿参数模型。<br><br>
+<strong>4. 通信带宽是张量并行的生命线</strong>：实测 Llama 70B 张量并行 8 卡，若用 NVLink（900GB/s），通信开销 ~8ms；若用 IB（200GB/s），开销飙升至 ~40ms，吞吐下降 60%。这就是为什么 DGX 服务器内 NVLink 是标配。
+</div>
+</div>
+
+<!-- 主流芯片对比 -->
+<div class="sec" id="mainstream">
+<span class="tag">主流芯片</span>
+<h2>当前推理市场的主流选择</h2>
+<p>NVIDIA、AMD、Google、Amazon 占据 80-95% 市场份额。以下是 2026 年主流推理芯片对比。</p>
+
+<table class="tbl" style="margin-top:24px">
+<thead>
+<tr><th>芯片</th><th>FP16 算力</th><th>HBM 容量</th><th>HBM 带宽</th><th>L2/L3 Cache</th><th>适用场景</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>NVIDIA H100</strong></td><td>989 TFLOPS</td><td>80 GB</td><td>3.35 TB/s</td><td>50 MB</td><td>通用推理，生态成熟</td></tr>
+<tr><td><strong>NVIDIA H200</strong></td><td>989 TFLOPS</td><td>141 GB</td><td>4.8 TB/s</td><td>50 MB</td><td>大模型单卡部署</td></tr>
+<tr><td><strong>NVIDIA B200</strong></td><td>2250 TFLOPS</td><td>192 GB</td><td>8 TB/s</td><td>192 MB</td><td>下一代旗舰</td></tr>
+<tr><td><strong>AMD MI300X</strong></td><td>2600 TFLOPS</td><td>192 GB</td><td>5.3 TB/s</td><td>256 MB</td><td>内存容量优势</td></tr>
+<tr><td><strong>Google TPU-8i</strong></td><td>~1200 TFLOPS</td><td>192 GB</td><td>7.4 TB/s</td><td>~120 MB</td><td>推理专用</td></tr>
+<tr style="background:var(--amb)"><td><strong>Groq LPU</strong></td><td>~750 TOPS (INT8)</td><td>-</td><td>-</td><td><strong>230 MB SRAM</strong></td><td>极低延迟</td></tr>
+<tr style="background:var(--amb)"><td><strong>Cerebras WSE-3</strong></td><td>21.1 PFLOPS</td><td>-</td><td>-</td><td><strong>44 GB SRAM</strong></td><td>晶圆级芯片</td></tr>
+</tbody>
+</table>
+
+<div class="note" style="margin-top:24px">
+<strong>📦 片上 SRAM vs HBM 的关系</strong><br><br>
+<strong>传统 GPU 架构</strong>（H100/MI300X）：<br>
+• SRAM 很小（50-256MB），仅做临时 cache<br>
+• HBM 是主存储，模型权重和 KV Cache 都在 HBM<br>
+• <strong>HBM 带宽即推理性能上限</strong><br><br>
+<strong>SRAM-Centric 架构</strong>（Groq/Cerebras）：<br>
+• 巨大片上 SRAM（230MB - 44GB），模型权重全部驻留片上<br>
+• <strong>无 HBM 瓶颈</strong>，访存延迟从 100ns 降至 1ns（100× 加速）<br>
+• 限制：SRAM 成本高，仅适合模型 < 片上容量的场景
+</div>
+</div>
+
+<!-- Groq & Cerebras -->
+<div class="sec" id="groq-cerebras">
+<span class="tag amber">新兴势力</span>
+<h2>Groq 与 Cerebras：推理专用芯片的突破</h2>
+<p>Groq 和 Cerebras 采用完全不同于 GPU 的架构，专为低延迟推理设计。</p>
+
+<h3>Groq LPU (Language Processing Unit)</h3>
+<div class="card" style="margin-top:18px">
+<h4>核心设计思想：确定性执行 + 极致 SRAM</h4>
+<p>Groq 抛弃传统 GPU 的线程调度，采用 <strong>TSP (Temporal Instruction Scheduling)</strong>：编译时确定每个操作的执行时间，运行时零调度开销。芯片内集成 <strong>230MB SRAM</strong>，KV Cache 完全放在片上。</p>
+<p style="margin-top:12px"><strong>适用场景</strong>：小批量 / 单用户推理，对延迟极度敏感的实时应用（聊天机器人、代码补全）。</p>
+<p><strong>限制</strong>：SRAM 容量限制支持的最大上下文（~32K）；2026 年 4 月被 NVIDIA 以 200 亿美元收购。</p>
+</div>
+
+<h3 style="margin-top:36px">Cerebras WSE-3 (Wafer-Scale Engine)</h3>
+<div class="card" style="margin-top:18px">
+<h4>核心设计思想：晶圆级芯片 + 全片上存储</h4>
+<p>Cerebras 将整个 <strong>晶圆</strong>（300mm）做成一块芯片，集成 <strong>44GB SRAM</strong>、<strong>90 万个核心</strong>。模型权重与 KV Cache 全部驻留片上，消除片外内存瓶颈。</p>
+<p style="margin-top:12px"><strong>适用场景</strong>：模型 < 100B 且需要极致吞吐的场景（API 服务、批量生成）。2026 年 5 月 IPO，市值一度触及 800 亿美元。</p>
+<p><strong>限制</strong>：单系统成本 >$200万；能效比远低于 GPU。</p>
+</div>
+</div>
+
+<!-- 交互计算器 -->
+<div class="sec" id="calculator">
+<span class="tag cyan">交互工具</span>
+<h2>推理性能计算器</h2>
+<p>选择芯片与模型，自动计算推理瓶颈和峰值吞吐。</p>
+
+<div class="calc">
+<h4 style="margin-bottom:18px">选择芯片</h4>
+<div class="calc-row">
+<label>芯片型号</label>
+<select id="chipPreset" onchange="loadPreset()" style="flex:2">
+<option value="h100">NVIDIA H100 SXM</option>
+<option value="h200">NVIDIA H200 SXM</option>
+<option value="b200">NVIDIA B200</option>
+<option value="mi300x">AMD MI300X</option>
+<option value="tpu8i">Google TPU-8i</option>
+<option value="groq1">Groq GroqChip v1</option>
+<option value="cerebras">Cerebras WSE-3</option>
+</select>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px;font-size:.82rem">
+<div class="chip-card" style="padding:12px">
+<div class="label" style="font-size:.7rem">峰值算力</div>
+<div id="specFlops" class="val" style="font-size:1.1rem">-</div>
+</div>
+<div class="chip-card" style="padding:12px">
+<div class="label" style="font-size:.7rem">HBM/SRAM</div>
+<div id="specMem" class="val" style="font-size:1.1rem">-</div>
+</div>
+<div class="chip-card" style="padding:12px">
+<div class="label" style="font-size:.7rem">内存带宽</div>
+<div id="specBW" class="val" style="font-size:1.1rem">-</div>
+</div>
+<div class="chip-card" style="padding:12px">
+<div class="label" style="font-size:.7rem">片上缓存</div>
+<div id="specCache" class="val" style="font-size:1.1rem">-</div>
+</div>
+</div>
+
+<h4 style="margin:24px 0 18px">模型与负载</h4>
+<div class="calc-row">
+<label>选择模型预设</label>
+<select id="modelPreset" onchange="loadModelPreset()">
+<option value="">-- 自定义 --</option>
+<option value="llama370b">Llama 3.1 70B</option>
+<option value="llama3405b">Llama 3.1 405B</option>
+<option value="deepseekv3">DeepSeek-V3 (37B active)</option>
+</select>
+</div>
+<div class="calc-row">
+<label>模型参数量 (B)</label>
+<input type="range" id="modelSize" min="7" max="500" value="70" step="1" oninput="autoCalc()">
+<span id="modelSizeVal" class="mono" style="min-width:80px;text-align:right">70</span>
+</div>
+<div class="calc-row">
+<label>隐藏层维度</label>
+<input type="range" id="hiddenDim" min="2048" max="16384" value="8192" step="128" oninput="autoCalc()">
+<span id="hiddenDimVal" class="mono" style="min-width:80px;text-align:right">8192</span>
+</div>
+<div class="calc-row">
+<label>层数</label>
+<input type="range" id="numLayers" min="20" max="120" value="80" step="1" oninput="autoCalc()">
+<span id="numLayersVal" class="mono" style="min-width:80px;text-align:right">80</span>
+</div>
+<div class="calc-row">
+<label>上下文长度 (tokens)</label>
+<input type="range" id="ctxLen" min="0" max="10" value="3" step="1" oninput="autoCalc()">
+<span id="ctxLenVal" class="mono" style="min-width:80px;text-align:right">16K</span>
+</div>
+<div class="calc-row">
+<label>批量大小 (batch)</label>
+<input type="range" id="batchSize" min="0" max="10" value="0" step="1" oninput="autoCalc()">
+<span id="batchSizeVal" class="mono" style="min-width:80px;text-align:right">1</span>
+</div>
+
+<h4 style="margin:24px 0 18px">多卡集群配置</h4>
+<div class="calc-row">
+<label>卡数 (num_gpus)</label>
+<input type="range" id="numGPUs" min="0" max="9" value="0" step="1" oninput="autoCalc()">
+<span id="numGPUsVal" class="mono" style="min-width:80px;text-align:right">1</span>
+</div>
+<div class="calc-row">
+<label>并行策略</label>
+<select id="parallelStrategy" onchange="autoCalc()">
+<option value="data">数据并行（吞吐线性扩展）</option>
+<option value="tensor">张量并行（支持更大模型）</option>
+<option value="pipeline">流水线并行（batch吞吐优化）</option>
+</select>
+</div>
+<div class="calc-row">
+<label>卡间通信带宽 (GB/s)</label>
+<input type="range" id="interConnect" min="0" max="8" value="3" step="1" oninput="autoCalc()">
+<span id="interConnectVal" class="mono" style="min-width:80px;text-align:right">300</span>
+</div>
+
+<div id="result" class="calc-result">
+<div style="font-size:.88rem;color:var(--t2)">KV Cache 大小</div>
+<strong id="kvCache" style="font-size:1.4rem">-</strong>
+<div style="font-size:.88rem;color:var(--t2);margin-top:14px">AR 阶段单 token 延迟</div>
+<strong id="latency">-</strong>
+<div style="font-size:.88rem;color:var(--t2);margin-top:14px">理论峰值吞吐</div>
+<strong id="throughput">-</strong>
+<div style="font-size:.88rem;color:var(--t2);margin-top:14px">瓶颈分析</div>
+<strong id="bottleneck" style="font-size:1.2rem">-</strong>
+</div>
+</div>
+
+<div style="background:var(--sf2);border-radius:6px;padding:18px;margin-top:18px;font-size:.85rem;line-height:1.8">
+<strong style="display:block;margin-bottom:8px;color:var(--t1)">📐 计算公式说明</strong>
+<p style="margin:0;color:var(--t2)">
+<strong>KV Cache 大小</strong> = 2 (K+V) × context_len × hidden_dim × num_layers × 2 bytes (FP16)<br>
+<strong>AR 延迟</strong> = (模型权重 + KV Cache) / 内存带宽<br>
+<strong>峰值吞吐</strong> = (1000ms / 延迟) × batch_size<br>
+<strong>计算密度</strong> = (2 × model_params FLOPs) / (权重 + KV Cache 字节)<br>
+<strong>Roofline 分析</strong>：若计算密度 &lt; 芯片峰值 FLOPs/带宽比，则带宽受限
+</p>
+<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--bd)">
+<strong style="display:block;margin-bottom:8px;color:var(--t1)">🔗 多卡并行策略</strong>
+<p style="margin:0;color:var(--t2)">
+<strong>数据并行</strong>：每卡独立处理请求，吞吐 = 单卡 × 卡数，无模型通信开销。适合高并发 API 服务。<br>
+<strong>张量并行</strong>：模型按层切分，每卡存 1/N 的参数和 KV Cache，每层需 all-reduce 通信。适合单模型放不下单卡。<br>
+<strong>流水线并行</strong>：模型按层分阶段，前后串行传递激活值。需大 batch 填满流水线，否则气泡大。<br><br>
+<strong>通信开销</strong>（张量并行 all-reduce）= 4 × hidden_dim × layers bytes / 卡间带宽<br>
+<strong>NVLink 带宽</strong>：H100 = 900GB/s（8卡），IB/RoCE = 200-400GB/s
+</p>
+</div>
+</div>
+</div>
+
+<!-- 投资判断 -->
+<div class="sec" id="conclusion">
+<span class="tag green">投资判断</span>
+<h2>性价比分析与未来技术路径</h2>
+
+<h3>如何评估推理性价比？</h3>
+<p>推理性价比 = <strong>有效吞吐 / TCO</strong>。关键变量：</p>
+<ul>
+<li><strong>有效吞吐</strong>：不是峰值 TPS，而是在目标延迟 SLA 下（如 P99 < 200ms）的稳定吞吐</li>
+<li><strong>TCO</strong>：芯片成本 + 功耗（3 年折旧） + 互联 / 液冷等基础设施 + 软件维护成本</li>
+<li><strong>利用率</strong>：多租户场景下的资源利用率，GPU 通用性强，利用率可达 70%；专用芯片利用率常 < 40%</li>
+</ul>
+
+<h3 style="margin-top:32px">2026-2028 技术路径判断</h3>
+
+<div class="grid2" style="margin-top:24px">
+<div class="card">
+<h4>短期（2026-2027）：GPU 依然主导</h4>
+<p><strong>NVIDIA H100/H200/B200</strong> 凭借生态优势、灵活性、成熟工具链继续统治。AMD MI300X 在成本敏感场景抢占份额，但 ROCm 生态是瓶颈。</p>
+<p style="margin-top:12px"><strong>投资建议</strong>：NVIDIA 依然是最安全的选择。AMD 是对冲选项。</p>
+</div>
+
+<div class="card">
+<h4>中期（2027-2028）：专用芯片渗透加速</h4>
+<p>推理负载占比超过训练后，<strong>推理专用芯片</strong>（Groq、Cerebras、TPU-8i）在特定场景渗透率从 5% 升至 15-20%。</p>
+<p style="margin-top:12px"><strong>投资建议</strong>：关注已有规模部署的玩家。避免尚未量产的 ASIC。</p>
+</div>
+
+<div class="card">
+<h4>技术趋势 1：内存带宽军备竞赛</h4>
+<p>B200 带宽 8TB/s，下一代预计 >12TB/s。<strong>带宽即推理性能</strong>，这是硬件迭代的核心维度。</p>
+</div>
+
+<div class="card">
+<h4>技术趋势 2：算法-硬件协同优化</h4>
+<p>DeepSeek MLA、稀疏注意力、量化（INT4/FP8）、KV Cache 压缩等算法创新，降低对带宽的依赖。<strong>软件定义的硬件效率</strong>成为差异化竞争力。</p>
+</div>
+</div>
+
+<h3 style="margin-top:36px">投资结论</h3>
+<div class="note" style="background:var(--gnb);border-color:var(--gn)">
+<strong>核心判断</strong><br><br>
+<strong>1. NVIDIA 护城河依然坚固</strong>：软件生态（CUDA、TensorRT）、网络（NVLink）、工具链成熟度是 3-5 年内无法追赶的壁垒。<br><br>
+<strong>2. 专用芯片是补充而非替代</strong>：Groq/Cerebras 在特定场景（低延迟、固定模型）有优势，但无法覆盖通用推理需求。市占率天花板 ~15-20%。<br><br>
+<strong>3. 算法创新降低硬件依赖</strong>：DeepSeek、Anthropic 等通过算法创新，让 H100 完成原本需 B200 的工作。<strong>软件公司议价能力提升</strong>。<br><br>
+<strong>4. 关注带宽而非算力</strong>：推理性能的核心指标从 TFLOPS 转向 TB/s。<br><br>
+<strong>5. 云厂商自研分流中高端市场</strong>：Google TPU、AWS Trainium/Inferentia、Azure Maia 都在侵蚀 NVIDIA 的云推理市场。长期看，云厂商自研占比可能达 30-40%。
+</div>
+</div>
+
+</div>
+<!-- End of ai-chip-report -->
+
+<script>
+// 芯片预设数据
+const presets = {
+  h100: {flops:989, bw:3.35, mem:80, cache:50, name:'NVIDIA H100 SXM', type:'HBM'},
+  h200: {flops:989, bw:4.8, mem:141, cache:50, name:'NVIDIA H200 SXM', type:'HBM'},
+  b200: {flops:2250, bw:8.0, mem:192, cache:192, name:'NVIDIA B200', type:'HBM'},
+  mi300x: {flops:2600, bw:5.3, mem:192, cache:256, name:'AMD MI300X', type:'HBM'},
+  tpu8i: {flops:1200, bw:7.4, mem:192, cache:120, name:'Google TPU-8i', type:'HBM'},
+  groq1: {flops:750, bw:80, mem:0.23, cache:230, name:'Groq GroqChip v1', type:'SRAM'},
+  cerebras: {flops:125000, bw:21000, mem:44, cache:44000, name:'Cerebras WSE-3', type:'SRAM'}
+};
+
+const modelPresets = {
+  llama370b: {size:70, hidden:8192, layers:80, name:'Llama 3.1 70B'},
+  llama3405b: {size:405, hidden:16384, layers:126, name:'Llama 3.1 405B'},
+  deepseekv3: {size:37, hidden:5120, layers:61, name:'DeepSeek-V3 (37B active)'}
+};
+
+function loadPreset() {
+  const sel = document.getElementById('chipPreset').value;
+  if (!sel) return;
+  const p = presets[sel];
+
+  document.getElementById('specFlops').innerHTML = `${p.flops >= 1000 ? (p.flops/1000).toFixed(1) + ' PFLOPS' : p.flops + ' TFLOPS'}<span class="unit">FP16</span>`;
+
+  let memDisplay = '';
+  if (p.mem >= 1000) {
+    memDisplay = `${(p.mem/1000).toFixed(1)} TB`;
+  } else if (p.mem < 1) {
+    memDisplay = `${(p.mem * 1024).toFixed(0)} MB`;
+  } else {
+    memDisplay = `${p.mem} GB`;
+  }
+  memDisplay += `<span class="unit">${p.type}</span>`;
+  document.getElementById('specMem').innerHTML = memDisplay;
+
+  let bwDisplay = '';
+  if (p.bw >= 1000) {
+    bwDisplay = `${(p.bw/1000).toFixed(1)} PB/s`;
+  } else {
+    bwDisplay = `${p.bw} TB/s`;
+  }
+  document.getElementById('specBW').innerHTML = bwDisplay;
+
+  let cacheDisplay = '';
+  if (p.cache >= 1000) {
+    cacheDisplay = `${(p.cache/1000).toFixed(1)} GB`;
+  } else {
+    cacheDisplay = `${p.cache} MB`;
+  }
+  document.getElementById('specCache').innerHTML = cacheDisplay;
+
+  autoCalc();
+}
+
+function loadModelPreset() {
+  const sel = document.getElementById('modelPreset').value;
+  if (!sel) return;
+  const m = modelPresets[sel];
+  document.getElementById('modelSize').value = m.size;
+  document.getElementById('hiddenDim').value = m.hidden;
+  document.getElementById('numLayers').value = m.layers;
+  autoCalc();
+}
+
+function autoCalc() {
+  const ctxLenMap = [2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152];
+  const batchMap = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024];
+  const gpuMap = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512];
+  const bwMap = [50, 100, 200, 300, 400, 600, 900, 1600, 3200];
+
+  const ctxIdx = parseInt(document.getElementById('ctxLen').value);
+  const batchIdx = parseInt(document.getElementById('batchSize').value);
+  const gpuIdx = parseInt(document.getElementById('numGPUs').value);
+  const bwIdx = parseInt(document.getElementById('interConnect').value);
+
+  const ctxLen = ctxLenMap[ctxIdx];
+  const batch = batchMap[batchIdx];
+  const numGPUs = gpuMap[gpuIdx];
+  const interConnect = bwMap[bwIdx];
+
+  document.getElementById('ctxLenVal').textContent = ctxLen >= 1048576 ? `${(ctxLen/1048576).toFixed(1)}M` : `${(ctxLen/1024).toFixed(0)}K`;
+  document.getElementById('batchSizeVal').textContent = batch;
+  document.getElementById('numGPUsVal').textContent = numGPUs;
+  document.getElementById('interConnectVal').textContent = interConnect;
+  document.getElementById('hiddenDimVal').textContent = document.getElementById('hiddenDim').value;
+  document.getElementById('numLayersVal').textContent = document.getElementById('numLayers').value;
+  document.getElementById('modelSizeVal').textContent = document.getElementById('modelSize').value;
+
+  calculate();
+}
+
+function calculate() {
+  const sel = document.getElementById('chipPreset').value;
+  if (!sel) return;
+  const chip = presets[sel];
+
+  const flops = chip.flops;
+  const bw = chip.bw;
+  const mem = chip.mem;
+  const M = parseFloat(document.getElementById('modelSize').value);
+  const hidden = parseFloat(document.getElementById('hiddenDim').value);
+  const layers = parseFloat(document.getElementById('numLayers').value);
+
+  const ctxLenMap = [2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152];
+  const batchMap = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024];
+  const gpuMap = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512];
+  const bwMap = [50, 100, 200, 300, 400, 600, 900, 1600, 3200];
+
+  const L = ctxLenMap[parseInt(document.getElementById('ctxLen').value)];
+  const B = batchMap[parseInt(document.getElementById('batchSize').value)];
+  const numGPUs = gpuMap[parseInt(document.getElementById('numGPUs').value)];
+  const interConnect = bwMap[parseInt(document.getElementById('interConnect').value)];
+  const strategy = document.getElementById('parallelStrategy').value;
+
+  const kvCacheGB = 2 * L * hidden * layers * 2 / 1e9;
+  const modelWeightGB = M * 2;
+
+  const totalReadGB = modelWeightGB + kvCacheGB;
+  const bwGBps = bw * 1000;
+  const singleLatencyMs = (totalReadGB / bwGBps) * 1000;
+  const singleTPS = (1000 / singleLatencyMs) * B;
+
+  // 多卡计算
+  let clusterTPS = singleTPS;
+  let clusterLatency = singleLatencyMs;
+  let commOverheadMs = 0;
+  let strategyNote = '单卡推理';
+
+  if (numGPUs > 1) {
+    if (strategy === 'data') {
+      clusterTPS = singleTPS * numGPUs * 0.95; // 5% 调度开销
+      clusterLatency = singleLatencyMs;
+      strategyNote = `每卡处理独立请求，吞吐线性扩展 ${numGPUs}×（效率 95%）`;
+    } else if (strategy === 'tensor') {
+      const commPerTokenGB = 4 * hidden * layers / 1e9;
+      commOverheadMs = (commPerTokenGB / interConnect) * 1000;
+      clusterLatency = singleLatencyMs / numGPUs + commOverheadMs;
+      clusterTPS = (1000 / clusterLatency) * B;
+      const kvPerGPU = kvCacheGB / numGPUs;
+      strategyNote = `模型按层切分，每卡 ${kvPerGPU.toFixed(1)}GB KV Cache，all-reduce 通信 ${commOverheadMs.toFixed(3)}ms/token`;
+    } else if (strategy === 'pipeline') {
+      const pipelineStages = numGPUs;
+      const bubbleRatio = 1 / (pipelineStages * B);
+      commOverheadMs = (hidden * 2 / 1e9) / interConnect * 1000 * (pipelineStages - 1);
+      clusterLatency = singleLatencyMs * (1 + bubbleRatio) + commOverheadMs;
+      clusterTPS = (1000 / clusterLatency) * B;
+      strategyNote = `模型按 ${pipelineStages} 阶段流水，通信 ${commOverheadMs.toFixed(2)}ms，需大 batch（当前 ${B}）摊销气泡`;
+    }
+  }
+
+  const flopsPerToken = 2 * M * 1e9;
+  const arithmeticIntensity = flopsPerToken / (totalReadGB * 1e9);
+  const rooflineRatio = (flops * 1e12) / (bw * 1e12);
+
+  let bottleneck = '';
+  let bottleneckDetail = '';
+
+  // 多卡场景额外检查
+  if (numGPUs > 1 && strategy !== 'data') {
+    if (commOverheadMs > clusterLatency * 0.3) {
+      bottleneck = '🔴 通信瓶颈';
+      bottleneckDetail = `卡间通信占 ${(commOverheadMs/clusterLatency*100).toFixed(0)}% 延迟，需更快互联（NVLink/IB）`;
+    } else if (strategy === 'tensor' && kvCacheGB / numGPUs < 10) {
+      bottleneck = '⚠️ 过度切分';
+      bottleneckDetail = `每卡仅 ${(kvCacheGB/numGPUs).toFixed(1)}GB KV Cache，通信开销抵消收益`;
+    } else if (strategy === 'pipeline' && B < numGPUs * 2) {
+      bottleneck = '⚠️ Batch 太小';
+      bottleneckDetail = `Pipeline 需 batch ≥ ${numGPUs*2} 才能填满流水线，当前 ${B} 利用率低`;
+    }
+  }
+
+  if (!bottleneck) {
+    const totalRequired = (modelWeightGB / numGPUs) + kvCacheGB;
+    const totalAvailGB = mem * numGPUs;
+    if (totalRequired > totalAvailGB * 0.9) {
+      bottleneck = '⚠️ 显存不足';
+      bottleneckDetail = `需要 ${totalRequired.toFixed(1)} GB，超出集群 ${totalAvailGB.toFixed(0)} GB`;
+    } else if (arithmeticIntensity < rooflineRatio * 0.3) {
+      bottleneck = '🔴 严重带宽受限';
+      bottleneckDetail = `计算密度 ${arithmeticIntensity.toFixed(1)} FLOPs/Byte << 芯片峰值比 ${rooflineRatio.toFixed(1)}`;
+    } else if (arithmeticIntensity < rooflineRatio * 0.7) {
+      bottleneck = '🟡 带宽受限（典型推理瓶颈）';
+      bottleneckDetail = `计算密度 ${arithmeticIntensity.toFixed(1)} < 芯片峰值比 ${rooflineRatio.toFixed(1)}`;
+    } else {
+      bottleneck = '🟢 接近计算受限';
+      bottleneckDetail = `计算密度 ${arithmeticIntensity.toFixed(1)} ≈ 芯片峰值比 ${rooflineRatio.toFixed(1)}`;
+    }
+  }
+
+  let resultHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <div>
+        <div style="font-size:.88rem;color:var(--t2)">KV Cache 大小</div>
+        <strong style="font-size:1.4rem">${kvCacheGB.toFixed(2)} GB</strong>
+      </div>
+      <div>
+        <div style="font-size:.88rem;color:var(--t2)">模型权重</div>
+        <strong style="font-size:1.4rem">${modelWeightGB.toFixed(1)} GB</strong>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--bd);margin:18px 0"></div>
+  `;
+
+  if (numGPUs === 1) {
+    resultHTML += `
+      <div style="font-size:.88rem;color:var(--t2)">单卡 AR 延迟</div>
+      <strong>${singleLatencyMs.toFixed(2)} ms</strong>
+      <div style="font-size:.88rem;color:var(--t2);margin-top:14px">单卡峰值吞吐</div>
+      <strong>${singleTPS.toFixed(0)} tokens/s</strong>
+    `;
+  } else {
+    resultHTML += `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div style="font-size:.88rem;color:var(--t2)">单卡延迟</div>
+          <strong style="font-size:1.2rem">${singleLatencyMs.toFixed(2)} ms</strong>
+          <div style="font-size:.82rem;color:var(--t3);margin-top:4px">${singleTPS.toFixed(0)} tokens/s</div>
+        </div>
+        <div>
+          <div style="font-size:.88rem;color:var(--t2)">集群延迟 (${numGPUs} 卡)</div>
+          <strong style="font-size:1.2rem;color:var(--pu)">${clusterLatency.toFixed(2)} ms</strong>
+          <div style="font-size:.82rem;color:var(--t3);margin-top:4px">${(commOverheadMs > 0 ? `含通信 ${commOverheadMs.toFixed(1)}ms` : '无通信')}</div>
+        </div>
+      </div>
+      <div style="font-size:.88rem;color:var(--t2);margin-top:18px">集群总吞吐 (${numGPUs} 卡)</div>
+      <strong style="font-size:2.2rem;color:var(--pu)">${clusterTPS.toFixed(0)} tokens/s</strong>
+      <div style="font-size:.85rem;color:var(--t3);margin-top:4px">${strategyNote}</div>
+    `;
+  }
+
+  resultHTML += `
+    <div style="border-top:1px solid var(--bd);margin:18px 0"></div>
+    <div style="font-size:.88rem;color:var(--t2)">瓶颈分析</div>
+    <strong style="font-size:1.2rem">${bottleneck}</strong>
+    <div style="font-size:.85rem;font-weight:400;color:var(--t2);margin-top:6px">${bottleneckDetail}</div>
+  `;
+
+  document.getElementById('result').innerHTML = resultHTML;
+}
+
+// 页面加载时初始化
+window.addEventListener('load', function() {
+  loadPreset();
+
+  // Token增长趋势图
+  const tokenCtx = document.getElementById('tokenChart').getContext('2d');
+  new Chart(tokenCtx, {
+    type: 'line',
+    data: {
+      labels: ['2024 Q1', '2024 Q4', '2025 Q2', '2025 Q4', '2026 Q1', '2026 Q2', '2026 Q4'],
+      datasets: [
+        {
+          label: 'OpenAI (disclosed)',
+          data: [2, 8, 15, 22, 21.6, null, null],
+          borderColor: 'rgba(59,91,219,1)',
+          backgroundColor: 'rgba(59,91,219,0.1)',
+          borderWidth: 2.5,
+          pointRadius: 4,
+          tension: 0.3
+        },
+        {
+          label: 'Google Cloud API',
+          data: [null, null, null, 14.4, null, 23, 60],
+          borderColor: 'rgba(112,72,232,1)',
+          backgroundColor: 'rgba(112,72,232,0.1)',
+          borderWidth: 2.5,
+          pointRadius: 4,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        title: { display: false }
+      },
+      scales: {
+        y: {
+          type: 'logarithmic',
+          title: { display: true, text: '万亿 tokens/day（对数轴）' },
+          ticks: { callback: v => v >= 1 ? v + 'T' : v * 1000 + 'B' }
+        }
+      }
+    }
+  });
+});
+</script>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>移动智能的 GPT-3 时刻: 完成任意语言与图文给定的任务</title>
+<style>
+:root {
+  --bg:#fff; --text:#1a1a1a; --ink2:#5a5a5a; --accent:#c9541f;
+  --accent-soft:#fdf4ef; --teal:#2f6f66; --teal-soft:#eef5f3;
+  --line:#e4e2de; --code-bg:#f6f5f3;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  line-height:1.76; color:var(--text); background:var(--bg); font-size:17.5px;
+}
+.container { max-width:760px; margin:0 auto; padding:56px 24px 90px; }
+header { margin-bottom:40px; padding-bottom:30px; border-bottom:1px solid var(--line); }
+h1 { font-size:2.2em; font-weight:650; line-height:1.26; letter-spacing:-0.02em; margin-bottom:14px; }
+.meta { color:var(--ink2); font-size:0.87em; line-height:1.6; }
+h2 { font-size:1.58em; font-weight:650; letter-spacing:-0.01em; margin:62px 0 20px; }
+h2 .num {
+  display:block; font-size:0.43em; font-weight:600; letter-spacing:0.14em;
+  color:var(--accent); margin-bottom:5px;
+}
+h3 { font-size:1.2em; font-weight:650; margin:34px 0 13px; }
+h4 { font-size:1.02em; font-weight:650; margin:24px 0 9px; }
+p { margin-bottom:19px; }
+ul,ol { margin-bottom:19px; padding-left:25px; }
+li { margin-bottom:8px; }
+strong { font-weight:650; }
+em { font-style:normal; color:var(--accent); }
+a { color:var(--accent); text-decoration:none; border-bottom:1px solid rgba(201,84,31,.28); }
+a:hover { border-bottom-color:var(--accent); }
+code {
+  background:var(--code-bg); padding:2px 6px; border-radius:3px; font-size:0.88em;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+/* 金字塔 */
+.pyramid-box { margin:36px 0 46px; }
+.pyramid-label { text-align:center; font-size:0.71em; letter-spacing:0.34em; color:var(--ink2); margin-bottom:16px; }
+.pyr { border:1px solid var(--line); border-radius:8px; padding:15px 19px; margin-bottom:9px; }
+.pyr.top { background:var(--accent-soft); border-color:rgba(201,84,31,.3); }
+.pyr-tag { font-size:0.71em; font-weight:650; letter-spacing:0.08em; color:var(--accent); display:block; margin-bottom:4px; }
+.pyr-text { font-size:0.94em; line-height:1.64; }
+
+/* 目录 */
+.toc { background:#fafaf8; border:1px solid var(--line); border-radius:8px; padding:20px 24px; margin-bottom:46px; }
+.toc-h { font-weight:650; margin-bottom:11px; font-size:0.94em; }
+.toc ol { margin:0; padding-left:0; list-style:none; counter-reset:t; }
+.toc > ol > li { counter-increment:t; margin-bottom:6px; font-size:0.91em; }
+.toc > ol > li::before { content:counter(t) ". "; color:var(--accent); font-weight:650; }
+.toc a { border-bottom:none; color:var(--text); }
+.toc a:hover { color:var(--accent); }
+.toc .sub { font-size:0.85em; color:var(--ink2); padding-left:17px; margin-top:2px; }
+
+/* 结论块 */
+.takeaway {
+  background:var(--accent-soft); border-left:3px solid var(--accent);
+  padding:17px 21px; margin:24px 0 28px; border-radius:0 6px 6px 0;
+}
+.takeaway-h { font-size:0.72em; font-weight:650; letter-spacing:0.1em; color:var(--accent); margin-bottom:6px; }
+.takeaway p:last-child { margin-bottom:0; }
+.note {
+  background:var(--teal-soft); border-left:3px solid var(--teal);
+  padding:15px 19px; margin:24px 0; font-size:0.93em; border-radius:0 6px 6px 0;
+}
+.note p:last-child { margin-bottom:0; }
+.note-h { font-size:0.72em; font-weight:650; letter-spacing:0.1em; color:var(--teal); margin-bottom:5px; }
+
+/* 引语 */
+blockquote { border-left:2px solid var(--line); padding:3px 0 3px 17px; margin:20px 0; color:#3d3d3d; font-size:0.96em; }
+blockquote p:last-child { margin-bottom:0; }
+blockquote cite { display:block; font-style:normal; font-size:0.83em; color:var(--ink2); margin-top:6px; }
+
+/* 能力二分 */
+.cap { border:1px solid var(--line); border-radius:8px; padding:19px 21px; margin-bottom:14px; }
+.cap.l2 { border-color:rgba(201,84,31,.35); background:#fffdfb; }
+.cap-tag {
+  display:inline-block; font-size:0.69em; font-weight:650; letter-spacing:0.08em;
+  background:#f0efec; color:var(--ink2); padding:3px 9px; border-radius:3px; margin-bottom:9px;
+}
+.cap.l2 .cap-tag { background:var(--accent); color:#fff; }
+.cap h4 { margin:0 0 9px; font-size:1.07em; }
+.cap p:last-child, .cap ul:last-child { margin-bottom:0; }
+.said {
+  background:var(--code-bg); padding:10px 14px; border-radius:5px;
+  font-size:0.92em; margin-bottom:11px; color:#333;
+}
+
+/* 表格 */
+table { width:100%; border-collapse:collapse; margin:24px 0; font-size:0.89em; }
+th,td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { font-weight:650; background:#fafaf8; font-size:0.95em; }
+td:first-child { font-weight:600; }
+table.ctx-table { font-size:0.86em; }
+table.ctx-table td:nth-child(2) { color:#333; }
+table.ctx-table .ex { color:var(--ink2); font-style:normal; }
+tr.grp td {
+  background:#f7f6f3; font-weight:650; font-size:0.95em;
+  letter-spacing:0.03em; color:var(--ink2); padding:7px 12px;
+}
+
+/* 分层 */
+.lv { display:flex; gap:15px; padding:14px 0; border-bottom:1px solid var(--line); }
+.lv-badge {
+  flex:0 0 44px; height:44px; border-radius:6px; background:#f0efec;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.93em; color:var(--ink2);
+}
+.lv.key .lv-badge { background:var(--accent); color:#fff; }
+.lv-body { flex:1; }
+.lv-body h4 { margin:0 0 3px; font-size:1.01em; }
+.lv-body p { margin:0; font-size:0.92em; color:#444; }
+.lv.key .lv-body h4 { color:var(--accent); }
+
+/* 闭环 */
+.loop { background:var(--code-bg); border-radius:8px; padding:24px 22px; margin:28px 0; }
+.loop-step { display:flex; gap:13px; margin-bottom:13px; align-items:flex-start; }
+.loop-step:last-of-type { margin-bottom:0; }
+.loop-n {
+  flex:0 0 25px; height:25px; border-radius:50%; background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:0.79em; font-weight:650; margin-top:2px;
+}
+.loop-t { flex:1; font-size:0.93em; }
+.loop-t b { display:block; margin-bottom:1px; }
+.loop-back {
+  text-align:center; font-size:0.84em; color:var(--accent);
+  padding-top:11px; margin-top:5px; border-top:1px dashed rgba(201,84,31,.35);
+}
+
+.refs { margin-top:64px; padding-top:26px; border-top:1px solid var(--line); font-size:0.83em; color:var(--ink2); }
+.refs h3 { font-size:0.97em; color:var(--text); margin:0 0 11px; }
+.refs ol { padding-left:19px; }
+.refs li { margin-bottom:6px; }
+
+@media (max-width:640px) {
+  body { font-size:16px; }
+  .container { padding:36px 17px 60px; }
+  h1 { font-size:1.68em; }
+  h2 { font-size:1.32em; margin-top:48px; }
+  table { font-size:0.81em; }
+  table.ctx-table { font-size:0.78em; }
+  th,td { padding:8px 7px; }
+  .lv { gap:11px; }
+  .lv-badge { flex-basis:38px; height:38px; font-size:0.84em; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+<h1>移动智能的 GPT-3 时刻:<br>完成任意语言与图文给定的任务</h1>
+<p class="meta">调研笔记 · 2026 年 8 月 · 第四版</p>
+</header>
+
+<div class="pyramid-box">
+<div class="pyramid-label">金 字 塔 结 构</div>
+
+<div class="pyr top">
+<span class="pyr-tag">顶层结论</span>
+<div class="pyr-text">移动智能的 GPT-3 时刻,是它能<strong>完成任意用语言或图文给定的任务</strong>。这自然包含从 A 到 B 的导航,也包含更细粒度、更开放的任务——<strong>后者在模型训练时很难穷举,甚至很难想象</strong>。判据是「你很难难倒它」。</div>
+</div>
+
+<div class="pyr">
+<span class="pyr-tag">支柱一 · 能力(递进关系)</span>
+<div class="pyr-text">两种能力叠加。<strong>底层是常规导航任务</strong>: 跟人、寻物、跟随地图、漫游、指令跟随——这些不属于 in-context learning。<strong>上层是 in-context learning</strong>: 用语言与图文现场定义任务,带即兴成分。上层建立在下层之上。</div>
+</div>
+
+<div class="pyr">
+<span class="pyr-tag">支柱二 · 数据</span>
+<div class="pyr-text">追求<strong>人类的、各种各样的、多样的轨迹与任务数据</strong>。多样性是 instruction 标注的前提。数据量足够大时会自然出现<strong>大量合理但罕见的轨迹,这些轨迹本身就是智能的一部分</strong>——模型的即兴能力正是它们带来的。</div>
+</div>
+
+<div class="pyr">
+<span class="pyr-tag">支柱三 · 落地</span>
+<div class="pyr-text">数据驱动的<strong>闭环</strong>而非一次性攻关: 选一个能接管的真实场景低水平进场(人工兜底)→ 回流真实数据 → 深化模型 → 扩大接管范围。<strong>选场景 = 选数据 = 选模型能力边界。</strong></div>
+</div>
+
+</div>
+
+<div class="toc">
+<div class="toc-h">目录</div>
+<ol>
+<li><a href="#s1">判据: 完成任意给定的任务</a>
+  <div class="sub">ChatGPT 的类比 · 为什么「很难难倒」是可操作的</div></li>
+<li><a href="#s2">两种能力及其递进关系</a>
+  <div class="sub">常规导航任务 · in-context learning</div></li>
+<li><a href="#s3">Context 的形态</a>
+  <div class="sub">十种已识别形式 · 以及尚未想到的</div></li>
+<li><a href="#s4">能力分层与当前位置</a></li>
+<li><a href="#s5">移动智能与操作智能的区别</a>
+  <div class="sub">十个维度的对比 · 难点分布的差异</div></li>
+<li><a href="#s6">数据: 多样性是一切的前提</a>
+  <div class="sub">三个维度 · 罕见轨迹与即兴能力</div></li>
+<li><a href="#s7">落地: 数据驱动的闭环</a>
+  <div class="sub">选场景标准 · 低水平进场 · 营地排序</div></li>
+<li><a href="#s8">结语</a></li>
+</ol>
+</div>
+
+<h2 id="s1"><span class="num">第 一 部 分</span>判据: 完成任意给定的任务</h2>
+
+<div class="takeaway">
+<div class="takeaway-h">本节结论</div>
+<p>判据是<strong>能完成任意用语言或图文给定的任务</strong>。这个集合里既有从 A 到 B 的常规导航,也有现场定义的、更细粒度更开放的任务。关键在于<strong>后者在训练时无法穷举</strong>——所以不能靠枚举任务类型来解决,只能靠泛化。</p>
+</div>
+
+<h3>ChatGPT 为什么被认为是突破</h3>
+
+<p>GPT-3 的分水岭意义不在于某个 benchmark 更准,而在于 few-shot in-context learning 第一次稳定呈现: prompt 里给两三个例子,它就能执行从未为其微调过的新任务。one-shot 平均准确率约 45%,few-shot 约 65%——数字不高,但「教它」的成本从数万步梯度塌缩到几秒钟打字。</p>
+
+<p>更值得注意的是 ChatGPT 被广泛认可的原因: <strong>人们可以通过 prompt 定向地、few-shot 地调整它,使它执行任意下游任务。</strong>当时「prompt engineering」成为一个专门说法,本身就说明这个技术是可被调整的。</p>
+
+<p>反过来想更清楚: <strong>如果它只能做一个 chatbot,只能和人聊天,没办法被定制到任意角色或任务上,它的成功不会被这样认可。</strong>可定制性——而非对话质量——才是它被视为突破的原因。</p>
+
+<h3>移动智能的对应物</h3>
+
+<p>同样的逻辑迁移过来: 一个移动机器人只会执行预设的几类导航任务,即使每类都做得很好,也不构成 GPT-3 时刻。它必须能被现场指定<strong>训练时没有枚举过的任务</strong>。</p>
+
+<p>一个反例足以说明差距: 一个只会 A-to-B 的机器人,即使在陌生楼里成功率很高,你也没法让它「贴着右墙走」「绕着这几个桶蛇形前进」「按我照片上画的红线走」。<strong>它有自主性,但无法被现场定义任务。</strong></p>
+
+<h3>体能课老师的教法</h3>
+
+<p>一个具体观察。带孩子参加体能运动时,老师教小孩子走路线的方式是:</p>
+
+<blockquote>
+<p>先带孩子看一遍路线、告诉他每一步应该怎么走,然后让孩子独立完成。</p>
+</blockquote>
+
+<p>这里只有两步: <strong>演示与讲解合在一起是一步</strong>(老师边走边说,演示和语言是同一个信息包),然后是孩子独立执行。</p>
+
+<p>关键在于: <strong>孩子没有「训练」。</strong>他没有练一百遍,没有梯度更新,看了一遍听懂了就能做。这正是 in-context learning。而且这件事对人类来说<strong>很简单</strong>——这才是要害。一个五岁孩子做得到的事,当前的移动模型做不到。</p>
+
+<div class="note">
+<div class="note-h">为什么「很难难倒」是可操作的判据</div>
+<p>因为这类任务对人类是简单的,所以任何一个普通人随口提出的走法或任务,模型都应该能执行。这比「成功率 X%」更本质——<strong>成功率是在固定任务集上度量的,而这里要度量的恰恰是「任务集之外」的能力。</strong></p>
+</div>
+
+<h2 id="s2"><span class="num">第 二 部 分</span>两种能力及其递进关系</h2>
+
+<div class="takeaway">
+<div class="takeaway-h">本节结论</div>
+<p>要追求的是两种能力,不是一种取代另一种。<strong>第一种是常规导航任务</strong>,有若干基本形式,不属于 in-context learning。<strong>第二种是 in-context learning</strong>: 用语言与图文现场定义任务,带即兴成分。<strong>第二种建立在第一种之上——递进,不是并列或替代。</strong></p>
+</div>
+
+<div class="cap">
+<span class="cap-tag">能力一 · 基础层</span>
+<h4>常规导航任务</h4>
+<p>这类任务有明确的、可枚举的基本形式:</p>
+<ul>
+<li><strong>跟人</strong> — 跟随指定的人移动</li>
+<li><strong>寻物</strong> — 在空间中搜索目标物体</li>
+<li><strong>跟随地图</strong> — 按给定地图或路径行进</li>
+<li><strong>漫游</strong> — 无特定目标的自主探索与覆盖</li>
+<li><strong>指令跟随</strong> — 执行「去 3 楼会议室」这类目标明确的指令</li>
+</ul>
+<p style="margin-top:11px">这些是移动智能的基本功。它们可以被穷举、被单独训练、被逐项评测。<strong>它们不属于 in-context learning</strong>——每一类都是预先定义好的任务类型,模型见过这类任务的训练数据。</p>
+</div>
+
+<div class="cap l2">
+<span class="cap-tag">能力二 · 上层</span>
+<h4>In-Context Learning: 现场定义任务</h4>
+<p>用语言或图文<strong>在现场定义一个具体任务</strong>,而这个任务在训练时未被枚举:</p>
+<div class="said">「遇到这几个雪糕桶,以蛇形走位在中间迂回,然后从前面的消防栓折返回来完成一轮」</div>
+<p>这类任务的特征是<strong>带即兴成分</strong>——就像具身操作领域里的即兴行为。它不是从预设任务库里选一个,而是根据当场的物体、约束、目标临时组装出一套行为。</p>
+<p>其他例子: 「贴着右墙走到尽头」「按照片上这条红线走」「绕开中庭从侧廊过去」「跟着我走,但保持三米距离」。</p>
+</div>
+
+<h3>为什么是递进关系</h3>
+
+<p>能力二依赖能力一。即使任务是现场定义的,执行它仍然需要底层的避障、路径规划、定位、地标识别——这些都由能力一提供。<strong>in-context learning 提供的是「任务如何被指定」的灵活性,不是「如何移动」的能力。</strong></p>
+
+<p>反过来,能力一不蕴含能力二: 一个把五类常规任务都做到很高成功率的系统,面对「蛇形绕桶」依然束手无策,因为它的任务表达里没有这个概念。</p>
+
+<table>
+<thead><tr><th style="width:24%"></th><th>能力一</th><th>能力二</th></tr></thead>
+<tbody>
+<tr><td>任务来源</td><td>预定义的类型</td><td>现场用语言/图文定义</td></tr>
+<tr><td>训练时可否穷举</td><td>可以</td><td><strong>不可以</strong></td></tr>
+<tr><td>失败模式</td><td>做不好</td><td><strong>无法理解 / 表达不出来</strong></td></tr>
+</tbody>
+</table>
+
+<p>两者都重要。<strong>能力一决定它能不能用,能力二决定它是不是智能。</strong>商业上先需要能力一(闭环的起点),但 GPT-3 时刻的标志是能力二。</p>
+
+<h2 id="s3"><span class="num">第 三 部 分</span>Context 的形态</h2>
+
+<div class="takeaway">
+<div class="takeaway-h">本节结论</div>
+<p>下表列出目前能想到的十种 context 形态。<strong>它们之间没有递进关系,这个分类也几乎肯定不完备</strong>——真实世界里人给指令的方式远比这个列表丰富。列表的目的不是穷举,而是说明<strong>输入通道需要有多宽</strong>。</p>
+</div>
+
+<table class="ctx-table">
+<thead><tr><th style="width:22%">形态</th><th style="width:34%">例子</th><th>要求的核心能力</th></tr></thead>
+<tbody>
+
+<tr class="grp"><td colspan="3">已在近期工作中出现</td></tr>
+
+<tr>
+<td>演示</td>
+<td class="ex">带着它走一遍这条路线</td>
+<td>从 sensorimotor 序列反推任务意图。信息量最大——同时含空间路径与时序节奏。GEN-1.5 的 physical prompting 即此类,体能课老师用的也是</td>
+</tr>
+
+<tr>
+<td>宏观语言指令</td>
+<td class="ex">「先往左走,看到电梯后向右转」</td>
+<td>把语言里的语义地标 ground 到实时观测,维护「走到第几步」的进度状态。注意与常规导航的区别: 这里<strong>指定的是路径序列</strong>而非目标,终点对但走法不对即失败</td>
+</tr>
+
+<tr>
+<td>微观语言指令</td>
+<td class="ex">「以蛇形走位在这几个桶中间迂回,到消防栓折返,完成一轮」</td>
+<td>理解抽象运动模式、任务结构词汇(折返/一轮)、把消防栓识别为功能性地标。特点是<strong>没有目标点</strong>,翻译不成坐标。这只是 instruction following 的一种粒度,不代表更高级的智能</td>
+</tr>
+
+<tr>
+<td>图像 / 图文路径</td>
+<td class="ex">照片上用红线画出路线</td>
+<td>三重难关: 区分「红线是指令」而非场景内容(元认知)、2D 曲线映射为 3D 自身路径、处理拍摄视角与当前视角的差异</td>
+</tr>
+
+<tr>
+<td>实时多模态交互</td>
+<td class="ex">边走边说「左转」「这里走 S 弯」</td>
+<td>难点在时序而非语义: 指令与观测的时序对齐(现在还是下个路口)、打断与覆盖、1 秒内的响应延迟。对应的其实是 ChatGPT 时刻而非 GPT-3 时刻</td>
+</tr>
+
+<tr class="grp"><td colspan="3">尚未见到系统性工作</td></tr>
+
+<tr>
+<td>第三方视频演示</td>
+<td class="ex">给一段别人或另一台机器人执行任务的视频</td>
+<td>比亲自带走更难: 视角完全不同,需要更强的跨视角迁移与「他者动作 → 自身动作」的映射</td>
+</tr>
+
+<tr>
+<td>抽象示意图</td>
+<td class="ex">手绘草图、平面图、箭头标注</td>
+<td>缺少纹理与真实外观线索,只能从拓扑结构去理解并对齐到真实空间</td>
+</tr>
+
+<tr>
+<td>负例与禁止</td>
+<td class="ex">「别走这边」「不要靠近那个门」</td>
+<td>约束型表达,与「做什么」是不同的信息类型。需要在保持目标不变的前提下重新规划</td>
+</tr>
+
+<tr>
+<td>类比与历史引用</td>
+<td class="ex">「像刚才那样但慢一点」「用你上次走的那条路」</td>
+<td>依赖对自身历史行为的可检索表示,以及在其上做修饰性调整</td>
+</tr>
+
+<tr>
+<td>混合与追加</td>
+<td class="ex">语言 + 图像 + 演示混着给;执行中途追加新约束</td>
+<td>多模态 context 的融合与冲突消解;已开始执行后接受增量约束而不重启任务</td>
+</tr>
+
+</tbody>
+</table>
+
+<p><strong>不追求把这个列表补全。</strong>真正的判据回到第一部分: 任何一个普通人随口给出的指令形式,它都应该能接受。<strong>如果需要用户学习「支持哪几种指令格式」,那就还没到 GPT-3 时刻。</strong></p>
+
+<h2 id="s4"><span class="num">第 四 部 分</span>能力分层与当前位置</h2>
+
+<div class="takeaway">
+<div class="takeaway-h">本节结论</div>
+<p>分层原则是<strong>「换一个环境、换一种任务要付多少代价」</strong>。L0–L1 是能力一的逐步完善,<strong>L2 是能力二的出现</strong>,L3 是它作为系统的可靠性。行业主流产品在 L0,研究前沿在 L1 并开始触碰 L2。</p>
+</div>
+
+<div class="lv">
+<div class="lv-badge">L0</div>
+<div class="lv-body"><h4>预设导航: 依赖人工建图</h4>
+<p>含两种形态: 固定路线(标注路径点),以及图内自由导航(已建图区域内自主规划、动态避障)。共同前提是<strong>地图必须先建好、语义目标需人工绑定坐标</strong>,换场地要重新部署。今天的商用送餐、酒店配送机器人都在这一层。适配成本: 数天到数周现场工程。</p></div>
+</div>
+
+<div class="lv">
+<div class="lv-badge">L1</div>
+<div class="lv-body"><h4>常规导航任务齐备</h4>
+<p>能力一的五类基本形式都能做: 跟人、寻物、跟随地图、漫游、目标明确的指令跟随。能读门牌路牌,能自主规划含楼层切换的路线。<strong>但只能执行预定义的任务类型。</strong></p></div>
+</div>
+
+<div class="lv key">
+<div class="lv-badge">L2</div>
+<div class="lv-body"><h4>In-Context Learning ← GPT-3 时刻</h4>
+<p>能接受现场用语言、图文、演示定义的<strong>单个任务</strong>并零训练执行,包括训练时未枚举的任务。<strong>适配成本趋零——不只是换环境不花钱,是换任务也不花钱。</strong></p></div>
+</div>
+
+<div class="lv">
+<div class="lv-badge">L3</div>
+<div class="lv-body"><h4>系统级可靠性</h4>
+<p>不是单个任务做得更稳,而是<strong>作为一个系统可靠</strong>: 多任务连续切换、长链条串联不中断、途中完成交互(按电梯、开门、取放、交接)、连续数小时到全天无人接管、异常后自恢复。参考量级: 单步 90% 在 20 步链条上只剩 12%。</p></div>
+</div>
+
+<div class="lv">
+<div class="lv-badge">L4</div>
+<div class="lv-body"><h4>开放世界 + 社会协商</h4>
+<p>室内外贯通,与人车协商通行,处理施工绕行与突发人流。核心是社会性而非导航。</p></div>
+</div>
+
+<p style="margin-top:24px">为什么 L2 是门槛: L0 到 L1 每一层都还需要为新环境付出成本,进展本质是<strong>工程量的减少</strong>。L2 是质变——<strong>边际成本从「有」变成「几乎没有」,而且新增了一整个维度(任务可现场定义)</strong>。这与 GPT-3 的意义同构: 不是能力清单变长,而是获得新能力的方式变了。</p>
+
+<div class="note">
+<div class="note-h">关于 L2 与 L3 的边界</div>
+<p>这两层是否该合并值得说清。<strong>如果 L3 讲的只是「单个任务做得更可靠」,那它不该独立成层</strong>——那是 L2 的正常迭代,任何能力刚出现时成功率都低,提升可靠性是同一件事的延续,不构成新维度。</p>
+<p>所以这里把 L3 定义为<strong>系统级能力</strong>: L2 关心的是<em>一个</em>现场定义的任务能否被理解和执行,L3 关心的是<strong>大量任务连续切换、长链条串联时整个系统是否可靠</strong>。两者的失败模式不同——L2 的失败是「听不懂 / 做不出来」,L3 的失败是「单项都会,但连起来跑两小时就崩了」。后者需要的是任务调度、状态维护、异常恢复、跨任务的一致性,不是把某一项做得更准。</p>
+</div>
+
+<h2 id="s5"><span class="num">第 五 部 分</span>移动智能与操作智能的区别</h2>
+
+<div class="takeaway">
+<div class="takeaway-h">本节结论</div>
+<p>两者都被归在具身智能之下,但<strong>难点分布几乎是错开的</strong>: 操作的难点集中在物体与材料,移动的难点集中在空间与语义。这意味着尽管操作和移动常常共享研究范式，研发的细节上可能有比较大的差别。</p>
+</div>
+
+<table class="ctx-table">
+<thead><tr><th style="width:17%">维度</th><th style="width:39%">操作智能</th><th>移动智能</th></tr></thead>
+<tbody>
+
+<tr><td>任务多样性</td>
+<td>高。要面对的物体种类极多,每种物体的抓法、受力、形变都不同</td>
+<td>基本形式少(跟人、寻物、跟随地图、漫游、指令跟随),但现场定义的开放任务把总量重新推高</td></tr>
+
+<tr><td>场景多样性</td>
+<td>更偏室内。桌面、料理台、货架,布局变化有限</td>
+<td><strong>室内外都要覆盖</strong>。楼宇、园区、商场、街道,叠加天气、时段、人流密度,几乎无上界</td></tr>
+
+<tr><td>核心理解对象</td>
+<td>物体与材料: 刚性/柔性、摩擦、重量、接触点</td>
+<td><strong>场景与语义</strong>: 空间如何组织、路怎么走通、标识在说什么</td></tr>
+
+<tr><td>文字标识</td>
+<td>基本不需要</td>
+<td><strong>硬需求</strong>。门牌号、楼层指示、指向牌、临时公告,读错就到不了</td></tr>
+
+<tr><td>规划长度</td>
+<td>短程。子步骤之间耦合紧,但整体链条不长</td>
+<td><strong>长程</strong>。含楼层切换、区域穿越、多个中间节点</td></tr>
+
+<tr><td>任务时长</td>
+<td>数十秒到数分钟</td>
+<td><strong>十几分钟甚至更长</strong></td></tr>
+
+<tr><td>空间尺度</td>
+<td>厘米到米</td>
+<td>百米到公里</td></tr>
+
+<tr><td>精度要求</td>
+<td><strong>高</strong>。毫米级,抓偏一点就失败</td>
+<td>低。厘米到分米级足够</td></tr>
+
+</tbody>
+</table>
+
+<h3>三处值得单独说的差异</h3>
+
+<p><strong>泛化压力的方向是反的。</strong>操作的泛化压力来自物体——同一张桌子上换个杯子就是新问题。移动的泛化压力来自空间——同一个任务换一栋楼就是新问题。两者都要泛化,但要跨越的东西不同,这直接决定了数据该往哪个维度堆。</p>
+
+<p><strong>任务多样性这一栏有个反转。</strong>只看基本形式,移动的任务种类确实比操作少得多——操作面对的物体几乎无穷,而移动的基本形式可以列完。但把<strong>现场定义的开放任务</strong>算进来就变了: 「蛇形绕桶」「贴墙走」「按红线走」同样没有上界。所以真实的对比不是「移动任务少」,而是<strong>多样性的来源不同</strong>——不来自物体的物理属性,而来自人可以怎样描述一次行进。</p>
+
+<p><strong>大尺度与长时程叠加,改变了理解的对象。</strong>操作在米级空间、数分钟内完成,要理解的是眼前物体的物理属性。移动跨越百米以上、持续十几分钟,要理解的是空间如何组织、路怎么走通、标识在说什么——其中<strong>文字标识是硬需求而非加分项</strong>: 门牌号读错就到不了,楼层指示看漏就上错楼,而且这些字往往带着反光、遮挡、模糊、手写、临时贴纸。这是操作领域完全不会遇到的一类问题。</p>
+
+<h2 id="s6"><span class="num">第 六 部 分</span>数据: 多样性是一切的前提</h2>
+
+<div class="takeaway">
+<div class="takeaway-h">本节结论</div>
+<p>要追求的是<strong>人类的、各种各样的、多样的轨迹与任务数据</strong>。因果链很直接: <strong>数据多样 → 可标注出多样的 instruction → 模型能输出多样的轨迹</strong>。数据本身不多样,就支撑不出多样的输出。</p>
+</div>
+
+<h3>三个维度</h3>
+
+<table>
+<thead><tr><th style="width:20%">维度</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td>场景</td><td>不同建筑类型(写字楼、商场、住宅、医院、地铁站)、天气、时段、人流密度。近期文献的结论是 <a href="https://arxiv.org/abs/2507.06219">Diversity &gt; Scale</a>——同场景的大量数据价值远低于跨场景的多样数据</td></tr>
+<tr><td>任务</td><td>不只 A-to-B。要有回路巡逻、绕障模式、折返计数、路径约束(不许坐电梯/避开正门)、跟随引导、搜索。<strong>这些在现有移动数据集里几乎全部缺失</strong>,因为采集时的任务定义就是「从这走到那」</td></tr>
+<tr><td>轨迹</td><td>同一起终点的多种走法: 最短路/绕远路、快速/谨慎、贴边/走中间、避开人群/直接穿过、礼让优先/效率优先</td></tr>
+</tbody>
+</table>
+
+<p>后两个维度决定能力二的上限。<strong>instruction 是从数据里标出来的</strong>——数据里有一条人贴着右墙慢慢走的轨迹,它才能被标注成「贴右墙、慢速」,成为一条可训练的 instruction-行为对。数据里全是最短路,「贴墙走」这个指令就永远无法被理解。</p>
+
+<h3>罕见轨迹本身就是智能的一部分</h3>
+
+<p>这是关于数据规模最重要的一条认知,值得单独展开。</p>
+
+<p><strong>当数据量足够大时,会出现非常多合理但罕见的轨迹。</strong>这些轨迹不是噪声,不是需要被过滤的异常——<strong>它们本身就是智能的一部分。</strong></p>
+
+<p>关键在于: 我们当前可能<strong>根本没有办法想象</strong>某些轨迹会出现。但在那个特定的情况下,就是需要那样做才是合理的。一个人在真实场景里遇到某种从未预料的局面,他当场做出的那个反应——那才是最有价值的数据,恰恰因为它无法被事先设计。</p>
+
+<div class="note">
+<div class="note-h">即兴能力的来源</div>
+<p>模型的即兴能力,实际上就是这批数据带来的。<strong>人在实际任务中确实会遇到各种各样的情况,那时候就需要自由发挥</strong>——这些自由发挥的片段,是整个数据集里最有价值的部分。</p>
+<p>这也解释了为什么能力二不能靠「设计更多任务类型」来获得: 即兴的本质是应对没被设计过的局面。只能靠真实数据的规模与多样性把这类片段自然地捞进来。</p>
+</div>
+
+<p>对于确实极端罕见的行为模式,可能还需要<strong>针对性地专门采集</strong>来拓展数据边界。具体以什么方式做,目前还没有想好——这是一个需要单独设计的问题。</p>
+
+<h3>数据质量: 真实的人、真实的场景、真实的活</h3>
+
+<blockquote>
+<p>让你的数据都是摆拍的轨迹,他自然就学出来一个摆拍的轨迹;面对真实场景的时候,他可能就做不出来这个动作。</p>
+<cite>黄青虬,《具身是一场马拉松》</cite>
+</blockquote>
+
+<p>他指出的行业问题: 虽然已用上无本体采集(手套、头环),但仍在<strong>数采场摆拍</strong>——专业采集员做出「擦桌子」的动作而非真的为了擦干净,轨迹会变形。</p>
+
+<p>对移动智能的翻译: 采集「人在真实建筑里真的要去某个地方」的轨迹,而不是让采集员在空场地走预设路线。前者包含犹豫、抬头看标识、走错回头、等电梯、避让行人——<strong>而这些正是罕见轨迹与即兴反应的来源。</strong>真实性与多样性在这里是同一件事,不是两个需要平衡的目标。</p>
+
+<h3>采集方式</h3>
+
+<p><strong>无本体采集是趋势。</strong>路径是遥操作 → 夹爪 → 手套 → 只戴头环拍第一人称视频,综合效率提升 10 倍以上。移动智能的对应物是<strong>头戴相机 + IMU</strong>,让人戴着走遍各种建筑。人类数据可以直接用——GEN-1.5 已证明人在机器人视野里用自己的手演示,机器人能用自己的手复现。</p>
+
+<p><strong>部署回流是主引擎。</strong>已部署机器人的轨迹、观测、决策自动回流。这条路的可行性有一个重要前提被验证过: 次优数据不必丢弃,给它标注上「低质量/低速度」这类 metadata 后照样能入训,而不会教坏模型。这是从 L0 到 L2 的主要数据来源。</p>
+
+<p><strong>仿真用来生成 context,不是用来训练。</strong>危险或罕见的走法可以在仿真里安全地「演示」,作为 physical prompt 使用,而预训练不需要含仿真数据。</p>
+
+<h2 id="s7"><span class="num">第 七 部 分</span>落地: 数据驱动的闭环</h2>
+
+<div class="takeaway">
+<div class="takeaway-h">本节结论</div>
+<p>不做一次性技术攻关,而是跑<strong>闭环</strong>: 选一个能接管的真实场景低水平进场(人工兜底)→ 回流真实数据 → 深化模型 → 扩大接管范围。核心命题: <strong>选场景 = 选数据 = 选模型能力边界</strong>,场景选择是技术决策而非商业决策。</p>
+</div>
+
+<div class="loop">
+<div class="loop-step"><div class="loop-n">1</div>
+<div class="loop-t"><b>选场景</b>按三条标准筛,不按市场规模筛</div></div>
+<div class="loop-step"><div class="loop-n">2</div>
+<div class="loop-t"><b>低水平进场 + 人工兜底</b>不等能力二成熟,L1 水平配合人工接管就开始跑。商业上只需「节省 30% 人力」即可成立</div></div>
+<div class="loop-step"><div class="loop-n">3</div>
+<div class="loop-t"><b>数据回流</b>真实的人、真实场景、真实任务。罕见轨迹与即兴反应全部保留并标注 instruction</div></div>
+<div class="loop-step"><div class="loop-n">4</div>
+<div class="loop-t"><b>深化模型</b>成功率 ↑ 可靠性 ↑ 可被指令的维度 ↑</div></div>
+<div class="loop-back">↻ 回到第 2 步: 扩大接管范围,或进入下一个场景</div>
+</div>
+
+<p><strong>这是循环而非瀑布</strong>,每一圈同时产出商业收入和训练数据。这也意味着<strong>第一圈的技术水平可以很低</strong>——低到只能做一件事,只要那件事能进场、能回流数据。</p>
+
+<h3>选场景的三条标准</h3>
+
+<blockquote>
+<p>选场景 = 选数据 = 选基础模型能力。做很专用的活,很难训出通用智能。</p>
+<cite>黄青虬</cite>
+</blockquote>
+
+<table>
+<thead><tr><th style="width:26%">标准</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>与终局同构</td><td>能力要求要和最终目标场景相似,否则数据训不出通用能力。<strong>允许绕路,不允许走死路</strong></td></tr>
+<tr><td>可分阶段进入</td><td>哪怕只完成任务里的一个子环节,也能先进场景开始回流数据</td></tr>
+<tr><td>数据能回流</td><td>隐私、合规、技术上都允许把真实轨迹拿回来训练</td></tr>
+</tbody>
+</table>
+
+<h3>营地排序</h3>
+
+<p><strong>一号营地: 办公楼 / 园区内勤。</strong>楼层结构、电梯、走廊、门牌与所有室内移动场景共享核心能力;从「固定两点送文件」起步可逐步扩展;企业场景合规相对简单。额外优势是<strong>这里天然产生大量现场定义的任务需求</strong>——「东西在我工位左边第二个柜子」「走后门别经过前台」这类话每天都有人说,能力二的训练数据在这里自然产生。</p>
+
+<p><strong>二号营地: 酒店 / 商住公寓。</strong>对移动智能的价值是 A 点不确定但 B 点确定(布草间到任意房间),且楼层导航 + 门禁交互 + 与住客共处三件事同时存在。数据在保护隐私前提下可回流,而家庭数据几乎无法回流。</p>
+
+<p><strong>三号营地: 医院内物流。</strong>时效强、路线复杂、人工成本高,付费意愿明确。但合规门槛高、容错低,适合模型已有相当可靠性后再进。</p>
+
+<p><strong>终局: 开放环境配送。</strong>街道、跨楼、最后 100 米。技术要求 L4,法律与安全责任框架尚是空白。顺路但很远。</p>
+
+<h3>为什么不必等高成功率</h3>
+
+<blockquote>
+<p>机器人节拍与成本目前不如人,但不需要 100% 替代——节省保洁员 30% 的时间,酒店就能从 10 个保洁员变成 7 个保洁员 + 3 个机器人。</p>
+<cite>黄青虬</cite>
+</blockquote>
+
+<p>翻译过来: <strong>不需要机器人能处理所有请求,只要能吃掉最高频最简单的那 30% 就有商业价值。</strong>剩下 70% 交给人,同时这 30% 持续产出数据。</p>
+
+<p>配套的是<strong>先量化瓶颈</strong>的方法: 「人戴上夹爪在酒店能干 70% 的活,但算法干不到 5%——所以瓶颈不在执行器」。移动智能应做同样的量化: 人推着同样的底盘能完成多少,模型能完成多少?我的估计是人推着底盘能完成约 95% 的楼宇配送任务,当前模型在陌生楼里不到 20%。<strong>瓶颈明确在模型,不在硬件。</strong></p>
+
+<h2 id="s8"><span class="num">第 八 部 分</span>结语</h2>
+
+<p>移动智能的 GPT-3 时刻是<strong>能完成任意用语言或图文给定的任务</strong>: 既包括常规导航的几类基本形式,也包括现场定义、训练时无法穷举的开放任务。两种能力是递进关系——<strong>能力一决定它能不能用,能力二决定它是不是智能。</strong></p>
+
+<p>2026 年具身领域的进展已经证明了两个前提: 演示可以直接作为 context 使用并零梯度执行,多模态 prompt 可以指定「怎么做」而不只是「做什么」,而且即兴行为确实能从大规模预训练中涌现。缺的是把这些扩展到移动这个更大的状态空间,并打通「路径与风格指令」这个输入通道。</p>
+
+<p>路径上最关键的认知是: <strong>能力二来自数据多样性,而多样性里最有价值的部分——那些合理但罕见的轨迹、那些人在意外局面下的自由发挥——无法被设计,只能靠真实场景的持续回流自然获得。</strong>而回流需要先低水平进场。所以这不是「先攻关技术再商业化」,而是<strong>「用商业闭环养技术」</strong>。这也是为什么场景选择是技术决策: 你选的场景决定了能拿到什么轨迹,轨迹决定了能标出什么 instruction,instruction 决定了模型最终能被怎么指令。</p>
+
+<p>时间判断: 如果闭环在 2026–2027 启动,能力二的初步呈现在 <strong>3 年内</strong>是合理预期,L3 的系统级可靠性还要再 <strong>2–3 年</strong>。移动智能有机会成为具身智能最先规模商业化的分支——需求面更广(每栋楼都是场景),技术要求更窄(不需要解决灵巧操作)。</p>
+
+<div class="refs">
+<h3>参考来源</h3>
+<ol>
+<li>Generalist Team. <em>GEN-1.5: Embodied Foundation Models are One-Shot Learners</em>. Aug 2026. <a href="https://generalistai.com/blog/gen-1.5">generalistai.com/blog/gen-1.5</a></li>
+<li>Physical Intelligence. <em>π0.7: a Steerable Model with Emergent Capabilities</em>. Apr 2026. <a href="https://www.pi.website/blog/pi07">pi.website/blog/pi07</a></li>
+<li>Physical Intelligence. <em>π*0.6: a VLA that Learns from Experience</em>. Nov 2025. <a href="https://www.pi.website/blog/pistar06">pi.website/blog/pistar06</a></li>
+<li>黄青虬(墨奇智能 CTO). <em>具身是一场马拉松,VLA 和世界模型都不够本质</em>. 漫谈 Light the Star #82, Aug 2026.</li>
+<li>Wang Kaixuan. <em>让智能走出家门</em>. Mar 2026. <a href="https://wang-kx.github.io/posts/2026/03/21/post/">wang-kx.github.io</a></li>
+<li>Is Diversity All You Need for Scalable Robotic Manipulation? arXiv:2507.06219.</li>
+</ol>
+</div>
+
+</div>
+</body>
+</html>

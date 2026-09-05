@@ -1,18 +1,18 @@
 ---
 layout: default
-title: 博客
-permalink: /blog/
+title: AI 总结
+permalink: /ai-summary/
 ---
-<p style="margin-bottom:1rem;">每周记录</p>
+<p style="margin-bottom:1rem;">播客与视频内容的 AI 总结归档</p>
 <div class="posts">
   {% for post in site.posts %}
-    {% unless post.tags contains "AI 总结" %}
+    {% if post.tags contains "AI 总结" %}
     <article class="post-card">
         <a href="{{ post.url }}">
             <h2>{{ post.title }}</h2>
         </a>
         <p class="post-meta">{{ post.date | date: "%Y-%m-%d" }} · {{ post.excerpt | strip_html | truncate: 120 }}</p>
     </article>
-    {% endunless %}
+    {% endif %}
   {% endfor %}
 </div>

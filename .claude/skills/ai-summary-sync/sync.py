@@ -119,6 +119,8 @@ def cmd_add(args: argparse.Namespace) -> None:
 
     fm = (
         "---\n"
+        "lang: zh\n"
+        f"ref: {date}-{slug}\n"
         "layout: post\n"
         f'title: "{yq(title)}"\n'
         f"date: {date}\n"

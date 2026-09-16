@@ -1,0 +1,23 @@
+---
+layout: default
+title: Blog
+permalink: /en/blog/
+lang: en
+alt_url: /blog/
+description: Wang Kaixuan's blog on 3D vision, robotics, embodied AI and weekly notes. English edition.
+---
+<p style="margin-bottom:1rem;">Weekly notes, English edition</p>
+<div class="posts">
+  {% for post in site.posts %}
+    {% if post.lang == "en" and post.tags contains "AI 总结" %}
+    {% continue %}
+    {% elsif post.lang == "en" %}
+    <article class="post-card">
+        <a href="{{ post.url }}">
+            <h2>{{ post.title }}</h2>
+        </a>
+        <p class="post-meta">{{ post.date | date: "%Y-%m-%d" }} · {{ post.excerpt | strip_html | truncate: 120 }}</p>
+    </article>
+    {% endif %}
+  {% endfor %}
+</div>

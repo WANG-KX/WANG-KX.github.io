@@ -2,11 +2,13 @@
 layout: default
 title: AI 总结
 permalink: /ai-summary/
+lang: zh
+alt_url: /en/ai-summary/
 ---
 <p style="margin-bottom:1rem;">播客与视频内容的 AI 总结归档</p>
 <div class="posts">
   {% for post in site.posts %}
-    {% if post.tags contains "AI 总结" %}
+    {% if post.tags contains "AI 总结" and post.lang != "en" %}
     <article class="post-card">
         <a href="{{ post.url }}">
             <h2>{{ post.title }}</h2>

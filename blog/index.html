@@ -2,11 +2,13 @@
 layout: default
 title: 博客
 permalink: /blog/
+lang: zh
+alt_url: /en/blog/
 ---
 <p style="margin-bottom:1rem;">每周记录</p>
 <div class="posts">
   {% for post in site.posts %}
-    {% unless post.tags contains "AI 总结" %}
+    {% unless post.tags contains "AI 总结" or post.lang == "en" %}
     <article class="post-card">
         <a href="{{ post.url }}">
             <h2>{{ post.title }}</h2>

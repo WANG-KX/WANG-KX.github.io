@@ -1,0 +1,21 @@
+---
+layout: default
+title: AI Summary
+permalink: /en/ai-summary/
+lang: en
+alt_url: /ai-summary/
+description: English archive of AI-generated summaries of podcasts and videos.
+---
+<p style="margin-bottom:1rem;">Archive of AI-generated summaries of podcasts and videos, English edition</p>
+<div class="posts">
+  {% for post in site.posts %}
+    {% if post.lang == "en" and post.tags contains "AI 总结" %}
+    <article class="post-card">
+        <a href="{{ post.url }}">
+            <h2>{{ post.title }}</h2>
+        </a>
+        <p class="post-meta">{{ post.date | date: "%Y-%m-%d" }} · {{ post.excerpt | strip_html | truncate: 120 }}</p>
+    </article>
+    {% endif %}
+  {% endfor %}
+</div>

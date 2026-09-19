@@ -1,0 +1,880 @@
+---
+lang: zh
+ref: 2026-09-19-reward-ai-deep-dive
+layout: post
+title: "Reward AI 深度调研报告"
+date: 2026-09-19
+tags: [AI 总结]
+excerpt: "从斯坦福 DexCap / Mobile ALOHA 谱系走出的跨本体机器人基础模型公司：用自研 7 自由度可穿戴设备 Omnibody Hand 把人手操作录成多模态数据，训出通用策略 OM-1——One Model, One Data Interface, Any Body。"
+---
+
+<style scoped>
+.wd-doc{
+    --ink:#171a1f; --ink-2:#3d4551; --muted:#6b7480; --line:#e4e7ec; --line-2:#eef0f4;
+    --bg:#ffffff; --bg-soft:#f7f8fa; --bg-soft-2:#fbfcfd;
+    --c-summary:#1e40af;
+    --c-source:#475569;
+    --c-team:#7c3aed;
+    --c-tech:#0d9488;
+    --c-biz:#ea580c;
+    --c-risk:#be123c;
+    --official:#2563eb; --official-bg:#eff6ff;
+    --corrob:#0d9488; --corrob-bg:#f0fdfa;
+    --infer:#ea580c;  --infer-bg:#fff7ed;
+    --radius:12px;
+  }.wd-doc, .wd-doc *{box-sizing:border-box}.wd-doc{-webkit-text-size-adjust:100%}.wd-doc{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    font-size:16px; line-height:1.75; letter-spacing:.01em;
+  }.wd-doc .wrap{max-width:880px;margin:0 auto;padding:0 20px 96px}.wd-doc a{color:var(--official);text-decoration:none;border-bottom:1px solid rgba(37,99,235,.28)}.wd-doc a:hover{border-bottom-color:var(--official)}.wd-doc .cover{padding:56px 0 8px}.wd-doc .cover .kicker{font-size:12px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-bottom:18px}.wd-doc .cover h1{font-size:38px;line-height:1.22;margin:0 0 10px;font-weight:700;letter-spacing:-.01em}.wd-doc .cover .sub{font-size:19px;color:var(--ink-2);font-weight:500;margin:0 0 6px}.wd-doc .cover .meta{font-size:13px;color:var(--muted);margin-top:18px}.wd-doc .cover .meta span{margin-right:16px;display:inline-block}.wd-doc .srcline{
+    margin:22px 0 0;padding:12px 14px;background:var(--bg-soft);border:1px solid var(--line);
+    border-radius:10px;font-size:13.5px;line-height:1.9;color:var(--ink-2)
+  }.wd-doc .srcline b{font-weight:600;color:var(--ink)}.wd-doc .bd{display:inline-block;font-size:11px;line-height:1.6;padding:1px 7px;border-radius:4px;font-weight:600;white-space:nowrap;vertical-align:baseline;border:1px solid transparent}.wd-doc .bd-o{color:var(--official);background:var(--official-bg);border-color:#dbeafe}.wd-doc .bd-c{color:var(--corrob);background:var(--corrob-bg);border-color:#ccfbf1}.wd-doc .bd-i{color:var(--infer);background:var(--infer-bg);border-color:#fed7aa}.wd-doc .legend{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;font-size:12px;color:var(--muted)}.wd-doc .legend .bd{font-size:11px}.wd-doc h2{
+    font-size:25px;margin:64px 0 4px;font-weight:700;letter-spacing:-.01em;
+    padding-top:22px;border-top:1px solid var(--line)
+  }.wd-doc h2 .num{display:inline-block;font-size:12px;letter-spacing:.18em;color:var(--muted);vertical-align:middle;margin-right:12px;font-weight:600}.wd-doc h2.sec-summary{border-color:var(--c-summary)}.wd-doc h2.sec-summary .num{color:var(--c-summary)}.wd-doc h2.sec-source{border-color:var(--c-source)}.wd-doc h2.sec-source .num{color:var(--c-source)}.wd-doc h2.sec-team{border-color:var(--c-team)}.wd-doc h2.sec-team .num{color:var(--c-team)}.wd-doc h2.sec-tech{border-color:var(--c-tech)}.wd-doc h2.sec-tech .num{color:var(--c-tech)}.wd-doc h2.sec-biz{border-color:var(--c-biz)}.wd-doc h2.sec-biz .num{color:var(--c-biz)}.wd-doc h2.sec-risk{border-color:var(--c-risk)}.wd-doc h2.sec-risk .num{color:var(--c-risk)}.wd-doc h3{font-size:19px;margin:34px 0 8px;font-weight:650;color:var(--ink)}.wd-doc h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink-2)}.wd-doc p{margin:10px 0}.wd-doc ul, .wd-doc ol{margin:10px 0;padding-left:22px}.wd-doc li{margin:5px 0}.wd-doc .lead{color:var(--ink-2)}.wd-doc .box{border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin:16px 0;background:var(--bg-soft-2)}.wd-doc .box.k{border-left:3px solid var(--c-summary)}.wd-doc .box.warn{border-left:3px solid var(--c-risk);background:#fff7f9}.wd-doc .box.note{border-left:3px solid var(--c-tech)}.wd-doc .box .t{font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:6px;color:var(--ink)}.wd-doc .box p{margin:6px 0;font-size:14.5px}.wd-doc .tw{overflow-x:auto;margin:14px 0;-webkit-overflow-scrolling:touch}.wd-doc table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:600px}.wd-doc th, .wd-doc td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}.wd-doc th{background:var(--bg-soft);font-weight:650;color:var(--ink-2);font-size:12.5px;letter-spacing:.02em}.wd-doc td{color:var(--ink-2);line-height:1.62}.wd-doc tr:nth-child(even) td{background:var(--bg-soft-2)}.wd-doc .tag{font-size:11px;font-weight:700}.wd-doc figure{margin:22px 0}.wd-doc figcaption{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.6}.wd-doc .figbox{border:1px solid var(--line);border-radius:var(--radius);padding:16px 14px;background:var(--bg-soft-2);overflow-x:auto}.wd-doc svg{display:block;max-width:100%;height:auto}.wd-doc .tl{margin:18px 0;border-left:2px solid var(--line);padding-left:0}.wd-doc .tl .it{position:relative;padding:0 0 20px 22px;margin-left:1px}.wd-doc .tl .it:before{content:"";position:absolute;left:-6px;top:8px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--c-tech)}.wd-doc .tl .it.hi:before{background:var(--c-biz);border-color:var(--c-biz)}.wd-doc .tl .d{font-size:12px;font-weight:700;color:var(--c-tech);letter-spacing:.04em}.wd-doc .tl .it.hi .d{color:var(--c-biz)}.wd-doc .tl .h{font-size:15px;font-weight:650;margin:1px 0 2px}.wd-doc .tl .b{font-size:13.5px;color:var(--ink-2);line-height:1.65}.wd-doc .pc{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:18px 0}.wd-doc .pc .hd{padding:13px 18px;background:var(--bg-soft);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}.wd-doc .pc .hd .n{font-size:18px;font-weight:700}.wd-doc .pc .hd .r{font-size:13px;color:var(--muted)}.wd-doc .pc .bd2{padding:14px 18px}.wd-doc .pc .bd2:last-child{padding-bottom:18px}.wd-doc .kv{display:grid;grid-template-columns:104px 1fr;gap:6px 14px;font-size:14px;margin:10px 0}.wd-doc .kv dt{color:var(--muted);font-size:13px}.wd-doc .kv dd{margin:0;color:var(--ink-2)}.wd-doc .pill{display:inline-block;font-size:12px;padding:2px 9px;border:1px solid var(--line);border-radius:20px;color:var(--ink-2);background:#fff;margin:2px 4px 2px 0}.wd-doc .mlgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:14px 0 8px}.wd-doc .ml{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;display:flex;flex-direction:column}.wd-doc .ml .shot{position:relative;line-height:0;background:var(--bg-soft);border-bottom:1px solid var(--line);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden}.wd-doc .ml .shot img{width:100%;height:100%;object-fit:contain;display:block}.wd-doc .ml .shot .lbl{position:absolute;top:8px;right:8px;font-size:11px;font-weight:700;line-height:1.5;letter-spacing:.03em;color:var(--ink);background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:5px;padding:2px 7px}.wd-doc .ml .shot .n1x{position:absolute;top:8px;left:8px;font-size:11px;font-weight:700;line-height:1.5;letter-spacing:.03em;color:#0f5c3f;background:rgba(236,253,245,.95);border:1px solid #a7f3d0;border-radius:5px;padding:2px 7px}.wd-doc .ml .in{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1}.wd-doc .ml .nm{font-size:15px;font-weight:700;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;line-height:1.35}.wd-doc .ml .nm .sid{font-size:11.5px;font-weight:600;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.wd-doc .ml .ds{font-size:13.5px;color:var(--ink-2);line-height:1.62;margin:0}.wd-doc .ml .ft{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:auto;padding-top:6px}.wd-doc .ml .cap{font-size:11.5px;color:var(--muted);background:var(--bg-soft);border:1px solid var(--line);border-radius:5px;padding:2px 7px;line-height:1.6}.wd-doc .ml .cap b{color:var(--ink-2);font-weight:650}.wd-doc .ml.hl{border-color:#cfe0fb;background:#fff}.wd-doc .ml.hl .shot{background:#eff6ff}.wd-doc .sechead{font-size:12.5px;font-weight:700;letter-spacing:.05em;color:var(--c-tech);margin:22px 0 0;text-transform:uppercase}.wd-doc .sechead span{color:var(--muted);font-weight:600;letter-spacing:0;text-transform:none}.wd-doc footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.8}
+
+  @media (max-width:900px){.wd-doc .mlgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:600px){.wd-doc .cover{padding:36px 0 4px}.wd-doc .cover h1{font-size:28px}.wd-doc .cover .sub{font-size:16px}.wd-doc h2{font-size:21px;margin-top:48px}.wd-doc h3{font-size:17px}.wd-doc{font-size:15.5px}.wd-doc .kv{grid-template-columns:1fr}.wd-doc .kv dt{margin-top:8px}.wd-doc .mlgrid{grid-template-columns:1fr;gap:14px}
+  }
+
+</style>
+
+<div class="wd-doc">
+<div class="wrap">
+
+<!-- ============ COVER ============ -->
+<header class="cover">
+  <svg viewBox="0 0 880 150" role="img" aria-label="极简线条示意：人手轮廓与机器人手臂通过同一接口相连">
+    <g fill="none" stroke="#c9cfd8" stroke-width="1.4" stroke-linecap="round">
+      <path d="M60 108 L60 44 q0-14 14-14 t14 14 q0-9 9-9 t9 9 q0-8 8-8 t8 8 q0-7 8-7 t8 7 L138 70 q-4 34-24 40 z"/>
+      <path d="M60 108 q-6 12 6 16 h56 q12-4 6-16"/>
+      <path d="M158 76 h48"/>
+      <circle cx="228" cy="76" r="20"/>
+      <path d="M228 56 v-16 M228 96 v16 M208 76 h-16 M248 76 h16"/>
+      <path d="M258 76 h44"/>
+      <rect x="316" y="46" width="52" height="60" rx="8"/>
+      <path d="M368 76 h56"/>
+      <path d="M424 76 l30-22 M424 76 l30 22 M454 54 l16-8 M454 98 l16 8"/>
+      <circle cx="492" cy="42" r="7"/><circle cx="492" cy="110" r="7"/>
+      <path d="M330 46 v-22 h24 v22" stroke-dasharray="3 3"/>
+      <path d="M560 76 h60" stroke-dasharray="4 4"/>
+      <path d="M620 76 a22 22 0 0 1 22 -22 h18 a22 22 0 0 1 22 22 v10 a22 22 0 0 1 -22 22 h-18 a22 22 0 0 1 -22 -22 z" opacity=".55"/>
+      <path d="M700 76 h60" stroke-dasharray="4 4"/>
+      <path d="M760 76 l26-16 M786 60 l26-6 M760 76 l26 16 M786 92 l26 6"/>
+    </g>
+    <g fill="#8b95a3" font-family="-apple-system,PingFang SC,sans-serif" font-size="11" letter-spacing="1.2">
+      <text x="60" y="132">HUMAN HAND</text>
+      <text x="228" y="132" text-anchor="middle">ONE DATA INTERFACE</text>
+      <text x="342" y="132" text-anchor="middle">OM-1</text>
+      <text x="500" y="132" text-anchor="middle">CONTROL</text>
+      <text x="676" y="132" text-anchor="middle">ANY BODY</text>
+    </g>
+  </svg>
+
+  <div class="kicker">Embodied AI Company Deep Dive</div>
+  <p class="sub">从斯坦福 DexCap / Mobile ALOHA 谱系长出来的「跨本体机器人基础模型」</p>
+  <div class="meta">
+    <span>调研日期：2026-09-19</span>
+    <span>公司成立：2025</span>
+    <span>走出隐身：2026-09-14</span>
+    <span>规模：11–50 人</span>
+  </div>
+
+  <div class="srcline">
+    <b>原文 / 原始来源（置顶）</b><br>
+    官网 · <a href="https://www.rewardai.com/" target="_blank" rel="noopener">https://www.rewardai.com/</a><br>
+    一级技术文档 · <a href="https://www.rewardai.com/blog/OM-1/" target="_blank" rel="noopener">OM-1: Frontier Robot Intelligence, Learned Firsthand from Humans（2026-09-14）</a><br>
+    About us（CEO 署名） · <a href="https://www.rewardai.com/about/" target="_blank" rel="noopener">https://www.rewardai.com/about/</a><br>
+    官方演示视频 · <a href="https://youtu.be/IJvyS2aPsnA" target="_blank" rel="noopener">https://youtu.be/IJvyS2aPsnA</a> ｜ 官方 X <a href="https://x.com/RewardAI_" target="_blank" rel="noopener">@RewardAI_</a> ｜ YouTube <a href="https://www.youtube.com/@reward-ai" target="_blank" rel="noopener">@reward-ai</a>
+  </div>
+
+  <div class="legend">
+    <span class="bd bd-o">官方</span> 公司官网 / 官方社媒 / 创始人本人署名内容
+    <span class="bd bd-c" style="margin-left:10px">旁证</span> 学术论文、项目页、第三方媒体、公开档案
+    <span class="bd bd-i" style="margin-left:10px">推断</span> 本报告基于上述材料的推理（非官方确认）
+  </div>
+</header>
+
+<!-- ============ 结论先行 ============ -->
+<h2 class="sec-summary"><span class="num">00</span>结论先行</h2>
+
+<div class="box k">
+  <div class="t">五条核心判断</div>
+  <p><b>1. 公司画像。</b>Reward AI 是一家 2025 年成立、2026-09-14 走出隐身的旧金山湾区机器人基础模型公司，由两位斯坦福博士 <b>Zipeng Fu（CEO，中文名多译作付梓鹏 / 符梓鹏）</b> 与 <b>Chen Wang（CTO）</b> 联合创立。<span class="bd bd-o">官方</span><span class="bd bd-c">旁证</span></p>
+  <p><b>2. 技术主张一句话。</b>把机器人学习的<b>数据入口从「机器人本体」前移到「人手」</b>：用一套自研 7 自由度可穿戴采集设备 <b>Omnibody Hand</b> 把人类自然操作录成多模态流，训出跨本体的通用策略 <b>OM-1</b>，再用仿真强化学习训练的高频控制层去消化不同机器的动力学差异——即官方口号 <i>One Model, One Data Interface, Any Body</i>。<span class="bd bd-o">官方</span></p>
+  <p><b>3. 它是 UMI → DexCap 谱系的工业化升级版。</b>UMI 的核心机制是「同一个手持夹爪，人戴着采、机器人装上跑」；Reward AI 把夹爪换成「同一个 7-DoF 功能手 + 触觉/接近/力 + 电磁追踪」，并显式拆出一个独立时钟的控制层。CEO 本人是 <i>UMI on Legs</i>（CoRL 2024）的合著者，CTO 是 <i>DexCap</i>（RSS 2024）一作。<span class="bd bd-c">旁证·技术溯源</span></p>
+  <p><b>4. 目前唯一可验证的硬指标，是采集端的追踪误差</b>（高速段平均过冲 24.9 mm → 9.5 mm，降 60%）。任务成功率、数据规模、模型参数量、推理频率、融资金额、客户名单——<b>全部未披露</b>。<span class="bd bd-o">官方</span><span class="bd bd-c">旁证</span></p>
+  <p><b>5. 商业化尚未真正开始，但方向已经写在脸上。</b>无定价、无客户、无 API、无开源；创始人反复强调「Efficiency is ROI」与「所有视频均为 1 倍速」，明确对标产线节拍与部署回报，并强调模型可以「直接落到客户厂房里已经站着的机器人上」。<span class="bd bd-o">官方</span><span class="bd bd-i">推断</span></p>
+</div>
+
+<!-- ============ 一、公司速览 ============ -->
+<h2 class="sec-source"><span class="num">01</span>公司速览</h2>
+
+<div class="tw">
+<table>
+  <tr><th style="width:130px">项目</th><th>内容</th><th style="width:96px">性质</th></tr>
+  <tr><td>公司名</td><td>Reward AI（品牌与 X 账号均写作 Reward AI，官网域名 rewardai.com）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>成立时间</td><td>2025（LinkedIn 公司页）；两位创始人分别于 2025 年前后完成斯坦福博士</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>地理位置</td><td>San Francisco Bay Area（第三方媒体口径，官网未标注地址）</td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>规模</td><td>11–50 人（LinkedIn 公司页）；Privately Held</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>定位自述</td><td>「engineers, company builders and researchers … spanning the full stack: from large foundation models to gearboxes, from hands to legs, from visual and tactile perception to high-frequency control」</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>首个产品</td><td>OM-1（Omnibody Model 1）通用机器人策略 + Omnibody 全栈（Omnibody Hand / One Data Interface / Control Any Body）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>融资</td><td><b>未披露</b>金额、轮次、投资方。第三方行业通讯明确指出「截至本次发布，官网尚未披露融资金额和投资方」</td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>开放程度</td><td>模型权重、代码、数据集、API <b>均不开放</b>；无论文发表</td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>联系方式</td><td>general@rewardai.com（商务）、careers@rewardai.com（招聘）</td><td><span class="bd bd-o">官方</span></td></tr>
+</table>
+</div>
+
+<!-- ============ 二、信息来源清单 ============ -->
+<h2 class="sec-source"><span class="num">02</span>信息来源清单</h2>
+
+<p class="lead">调研共梳理出 <b>49 条</b>信息源，按性质分为三类。下表是按类别汇总的骨架。</p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:110px">类别</th><th style="width:60px">条数</th><th>代表来源</th><th>在本报告中的作用</th></tr>
+  <tr>
+    <td><span class="bd bd-o">官方</span></td><td>15</td>
+    <td>官网首页 / About us（CEO 署名）/ Blog 索引 / <b>OM-1 技术博文</b> / 官方演示视频 / 官方 X @RewardAI_ / 官方 YouTube @reward-ai / LinkedIn 公司页 / <b>Zipeng Fu 首发帖</b> / 两位创始人个人主页与 CV</td>
+    <td>事实基线。但需注意：所有性能声明均为「公司自述」，尚无第三方复现</td>
+  </tr>
+  <tr>
+    <td><span class="bd bd-c">旁证</span></td><td>31</td>
+    <td>DexCap / Mobile ALOHA / HumanPlus / DeepWBC / UMI on Legs / UMI / Sequential Dexterity / MimicPlay / SwingBot 等论文与项目页；Humanoids Daily、RuntimeWire、Digital CxO、CIVL、humanoid.guide、腾讯新闻·机器人前瞻、网易、SOURCEMIND、alphaXiv、Lacuna</td>
+    <td>技术脉络溯源 + 交叉验证 + 竞争定位。媒体报道中区分「事实转述」与「作者评论」</td>
+  </tr>
+  <tr>
+    <td><span class="bd bd-i">推断</span></td><td>3</td>
+    <td>基于官网 About 页「Selected past work by our team」14 张图的作者反查；基于「不开源 + 无客户 + Efficiency is ROI」的商业化路径判断</td>
+    <td>补充官方未披露的信息。均标注推理链条，与官方事实分开表述</td>
+  </tr>
+</table>
+</div>
+
+<div class="box note">
+  <div class="t">一个关键的隐藏信源</div>
+  <p>官网 About 页有一栏 <b>「Selected past work by our team」</b>，是一组滚动图片。它的正文文本在页面上不可见，但每张图片的 <code>alt</code> 属性是可读的官方文本——这是目前<b>唯一</b>能推断「除两位创始人之外还有谁」的官方线索。本报告第三节的团队推断即基于此。</p>
+  <p style="margin-top:8px">同理，OM-1 博文中 9 段演示视频的 <code>aria-label</code> 也是官方文本，其中一条直接写明：<i>「Omnibody Hands in motion, on robot arms and worn by a person at a table」</i>——这是判断「同一只手既戴在人手上、也装在机器人上」的官方证据。<span class="bd bd-o">官方</span></p>
+</div>
+
+<!-- ============ 三、核心成员 ============ -->
+<h2 class="sec-team"><span class="num">03</span>核心成员：背景与代表性优势</h2>
+
+<h3>3.1 Zipeng Fu（付梓鹏 / 符梓鹏）· 联合创始人 & CEO</h3>
+
+<div class="pc">
+  <div class="hd"><span class="n">Zipeng Fu</span><span class="r">Co-founder &amp; CEO · Stanford CS PhD · 前 Google DeepMind 研究员</span></div>
+  <div class="bd2">
+    <dl class="kv">
+      <dt>本科</dt><dd>UCLA，计算机科学 + 应用数学双学士（2016–2020），师从 <b>Song-Chun Zhu</b>（朱松纯）</dd>
+      <dt>硕士 / 研究</dt><dd>CMU 机器学习硕士 + 机器人研究所（Robotics Institute）研究生研究员（2020-08–2022-06），师从 <b>Deepak Pathak</b> 与 <b>Jitendra Malik</b></dd>
+      <dt>博士</dt><dd>Stanford AI Lab 计算机科学博士（2022-09 起），导师 <b>Chelsea Finn</b>，<b>2.5 年完成</b>；获 Pierre and Christine Lamond Fellowship（CS 系 top 7）</dd>
+      <dt>大厂 / 产业</dt><dd>Google DeepMind 学生研究员（2023-06–2023-12，与 <b>Jie Tan</b> 合作，做机器人导航大模型）；Vayu Robotics 实习（2022-07–09）</dd>
+    </dl>
+    <p style="font-size:13px;color:var(--muted);margin-top:2px"><span class="bd bd-o">官方</span> 个人主页 zipengfu.github.io 与其 CV；<span class="bd bd-c">旁证</span> alphaXiv 档案补充 Vayu Robotics 经历</p>
+  </div>
+</div>
+
+<h4>博士期间及之前的工作：一条「从底层自适应到系统可部署」的完整链</h4>
+
+<div class="tw">
+<table>
+  <tr><th style="width:210px">代表作</th><th style="width:78px">时间 / 会议</th><th>做了什么</th><th style="width:150px">沉淀的能力</th></tr>
+  <tr>
+    <td><b>RMA: Rapid Motor Adaptation</b></td><td>RSS 2021<br>（CMU 硕士期）</td>
+    <td>让四足机器人在未知地形上通过在线自适应快速恢复运动能力；被 WSJ、Forbes、DARPA 等广泛报道</td>
+    <td>底层鲁棒控制 + 在线自适应</td>
+  </tr>
+  <tr>
+    <td><b>Deep Whole-Body Control</b></td><td>CoRL 2022<br>Oral · Best Systems Finalist</td>
+    <td>用一个统一策略同时解决「操纵」与「移动」，即四足/轮式底盘 + 机械臂的全身控制</td>
+    <td>全身控制（WBC）的系统化</td>
+  </tr>
+  <tr>
+    <td><b>Robot Parkour Learning</b></td><td>CoRL 2023<br>Oral · Best Systems Finalist</td>
+    <td>四足机器人跑酷：在复杂地形上做感知驱动的敏捷运动</td>
+    <td>感知—控制 tight coupling</td>
+  </tr>
+  <tr>
+    <td><b>UMI on Legs</b></td><td>CoRL 2024</td>
+    <td>把 UMI（手持夹爪采集）学到的操纵策略，通过「以操纵为中心的全身控制器」装到移动底盘上</td>
+    <td><b>直接参与 UMI 谱系</b>：理解「采集—策略—控制」三段如何咬合</td>
+  </tr>
+  <tr>
+    <td><b>Mobile ALOHA</b>（共同一作）</td><td>CoRL 2024</td>
+    <td>低成本（约 3.2 万美元）双臂移动操纵系统；炒虾、开柜、按电梯、冲洗锅具；软硬件全开源，全球刷屏</td>
+    <td>系统级工程 + 大规模影响力</td>
+  </tr>
+  <tr>
+    <td><b>HumanPlus</b>（共同一作）</td><td>CoRL 2024<br>Best Paper Finalist（top 6）</td>
+    <td>人形机器人通过第一视角「影随」人体动作学习，再从人类动作做模仿学习</td>
+    <td>人形本体 + 人类动作到机器人的迁移</td>
+  </tr>
+  <tr>
+    <td>Mobility VLA / Open X-Embodiment</td><td>CoRL 2024 / ICRA 2024（Best Paper）</td>
+    <td>导航大模型；跨本体数据集与 RT-X 模型（DeepMind 主导的协作）</td>
+    <td>大模型范式 + 跨本体数据标准</td>
+  </tr>
+</table>
+</div>
+
+<div class="box k">
+  <div class="t">代表性优势（本报告判断）</div>
+  <p><b>他的核心能力不是「提出新算法」，而是「把学习到的策略真正部署到开放世界」。</b>从 RMA（让控制器在未知地形不崩）、DeepWBC（把移动与操纵合成一个策略）、Robot Parkour（把感知与控制耦合到极限）、到 Mobile ALOHA / HumanPlus（做成可复现、可开源、可演示的完整系统），这条线的每一步都在回答同一个问题：<i>怎样让一个 learned policy 在真实机器、真实节拍下不失效。</i></p>
+  <p>这直接解释了 OM-1 的架构选择：<b>为什么「控制层」是一等公民</b>——独立高频时钟、仿真 RL 训练、在线优化相邻预测过渡。这不是一个做 VLA 的人会优先设计的东西，而是一个做了四年「deployable robot systems」的人会优先设计的东西。<span class="bd bd-i">推断</span>（基于其论文序列与 OM-1 架构的一致性）</p>
+  <p style="margin-top:6px">次要但关键的一点：<b>他是 UMI on Legs 的合著者</b>，对 UMI 这条「用同一套手持硬件消解具身鸿沟」的路线有一手经验。这解释了为什么 Reward AI 敢把「同一个 Omnibody Hand 既戴在人手上、也装在机器人上」作为跨本体机制。<span class="bd bd-c">旁证</span></p>
+</div>
+
+<h3>3.2 Chen Wang · 联合创始人 &amp; CTO</h3>
+
+<div class="pc">
+  <div class="hd"><span class="n">Chen Wang</span><span class="r">Co-founder &amp; CTO · Stanford CS PhD · 师从李飞飞与 C. Karen Liu</span></div>
+  <div class="bd2">
+    <dl class="kv">
+      <dt>本科</dt><dd>上海交通大学 计算机科学学士，师从 <b>卢策吾（Cewu Lu）</b></dd>
+      <dt>博士</dt><dd>Stanford 计算机科学博士（2020 起，<b>2025-06 毕业</b>），师从 <b>李飞飞（Li Fei-Fei）</b> 与 <b>C. Karen Liu</b></dd>
+      <dt>研究经历</dt><dd>MIT CSAIL（2019，Edward Adelson GelSight 触觉组）→ NVIDIA Research（2022，NVIDIA Graduate Fellowship Finalist）→ Google DeepMind（2024）</dd>
+      <dt>研究方向自述</dt><dd>「robot learning for dexterous manipulation, imitation learning from human motion, and long-horizon planning and control」</dd>
+    </dl>
+    <p style="font-size:13px;color:var(--muted);margin-top:2px"><span class="bd bd-o">官方</span> 个人主页 chenwangjeremy.net</p>
+  </div>
+</div>
+
+<h4>博士期间及之前的工作：一条极度聚焦的「人类动作 → 机器人动作」线</h4>
+
+<div class="tw">
+<table>
+  <tr><th style="width:200px">代表作</th><th style="width:96px">时间 / 会议</th><th>做了什么</th><th style="width:150px">沉淀的能力</th></tr>
+  <tr>
+    <td>DenseFusion / 6-PACK / 力-扭矩动力学</td><td>CVPR 2019<br>ICRA 2020<br>IROS 2019</td>
+    <td>6D 物体姿态估计（RGB-D 稠密融合、类别级关键点跟踪）；peg-in-hole 的可迁移力-扭矩动力学模型</td>
+    <td><b>接触与力的建模</b>（本科阶段已切入）</td>
+  </tr>
+  <tr>
+    <td><b>SwingBot</b></td><td>IROS 2020<br><b>Best Paper Award</b></td>
+    <td>用手内触觉探索学习物体物理特征，完成动态摆甩操纵（MIT GelSight 组）</td>
+    <td><b>触觉驱动的动态操纵</b></td>
+  </tr>
+  <tr>
+    <td>Co-GAIL / HAN / robomimic</td><td>CoRL 2021<br>IROS 2021</td>
+    <td>从人人协作示范中抽取协作策略；手眼协调的动作空间；robomimic 大规模模仿学习基准</td>
+    <td>模仿学习基础设施</td>
+  </tr>
+  <tr>
+    <td><b>MimicPlay</b>（一作）</td><td>CoRL 2023<br>Oral · 三项 Finalist</td>
+    <td>从「人类自由玩耍」的视频中提取 latent plan，指导低层机器人策略，大幅减少对机器人本体示教的依赖</td>
+    <td>用廉价人类数据换昂贵机器人数据</td>
+  </tr>
+  <tr>
+    <td><b>Sequential Dexterity</b>（共一）</td><td>CoRL 2023</td>
+    <td>把多个多指手策略「链接」起来完成长程操纵，无需重新抓取即可切换功能模式</td>
+    <td>多指灵巧 + 长程组合</td>
+  </tr>
+  <tr>
+    <td>VoxPoser / ReKep / TRANSIC / Obj-Dex</td><td>CoRL 2023–2024</td>
+    <td>用大模型合成 3D value map；关系关键点约束做时空推理；sim2real 在线纠正；从人类动作数据做物体中心灵巧操作</td>
+    <td>高层规划 + 落地纠正</td>
+  </tr>
+  <tr>
+    <td><b>DexCap</b>（一作）</td><td><b>RSS 2024</b></td>
+    <td><b>便携式手部动捕系统</b>：胸前相机架（RGB-D LiDAR + 3 台 SLAM 相机）+ 电磁场动捕手套 + 背包计算/供电（约 40 分钟）；采人类灵巧操作 → fingertip IK 重定向到 LEAP 灵巧手 → 点云 Diffusion Policy</td>
+    <td><b>Omnibody Hand 的直接前身</b></td>
+  </tr>
+</table>
+</div>
+
+<div class="box k">
+  <div class="t">代表性优势（本报告判断）</div>
+  <p><b>他整个博士在做同一件事：降低「人类示教 → 机器人执行」的转换成本。</b>Co-GAIL（从人人协作示范学）→ MimicPlay（从人玩的视频学 latent plan）→ Sequential Dexterity（多指策略链接）→ DexCap（便携设备直接采人手）→ Obj-Dex（人类动作数据直接训物体中心灵巧操作）。这条线没有任何一步是「顺便做的」，每一步都在削薄同一个瓶颈。</p>
+  <p>第二层优势是<b>传感侧的完整度</b>：他在 MIT GelSight 组做过纯触觉驱动的操纵（SwingBot，IROS 2020 最佳论文），又在本科阶段做过力-扭矩动力学建模。Omnibody Hand 上「触觉 + 指间接近 + 力 + 手内相机」这套多模态组合，几乎是他人生的技术简历直接硬件化了。<span class="bd bd-i">推断</span></p>
+  <p style="margin-top:6px">词组证据：官方博文明确写 <i>「Building on our prior work <b>DexCap</b> …」</i>；创始人在首发帖中也写 <i>「We build on our prior work DexCap at Stanford.」</i><span class="bd bd-o">官方</span></p>
+</div>
+
+<h3>3.3 创始人之外的团队：基于官方 past-work 图谱的推断</h3>
+
+<p class="lead">官网没有 team 页，LinkedIn 公司页只显示 Zipeng Fu 一个具名成员 + 5 个匿名头像。About 页的「Selected past work by our team」是唯一官方线索，共 14 张图。把图片 <code>alt</code> 文本与各论文/项目逐一反查，可以得到下表。<b>除标注为官方/旁证的行外，人员身份均为推断。</b></p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:190px">past-work 图（官方 alt 摘要）</th><th style="width:190px">对应工作</th><th>已知作者</th><th style="width:96px">性质</th></tr>
+  <tr><td>双臂机器人在灶台炒虾</td><td>Mobile ALOHA（CoRL 2024）</td><td>Zipeng Fu（共一）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>人形叠卫衣 / 系鞋带</td><td>HumanPlus（CoRL 2024）</td><td>Zipeng Fu（共一）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>两只灵巧手用剪刀剪胶带</td><td><b>DexCap</b>（RSS 2024）</td><td><b>Chen Wang</b>（一作）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>机器人手拼装积木</td><td>Sequential Dexterity（CoRL 2023）</td><td>Chen Wang（共一）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>机械臂操作意式咖啡机</td><td>VIOLA（CoRL 2022）</td><td>Yifeng Zhu 等（UT Austin）</td><td><span class="bd bd-i">推断</span></td></tr>
+  <tr><td>夹爪装穹顶光学触觉指尖</td><td>DenseTact（ICRA 2022）</td><td>Won Kyung Do、Monroe Kennedy III（Stanford ARMLab）</td><td><span class="bd bd-i">推断</span></td></tr>
+  <tr><td>四足+机械臂在草地俯身</td><td>Deep Whole-Body Control（CoRL 2022）</td><td>Zipeng Fu（共一）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>小型人形爬木台阶</td><td><b>ToddlerBot</b>（arXiv 2502.00893）</td><td>Haochen Shi、Weizhuo Wang（<b>二人同时也是 DexCap 共同作者</b>）</td><td><span class="bd bd-i">推断</span>（置信度较高）</td></tr>
+  <tr><td>Science Robotics 封面：四足跨过倒木</td><td>腿足 locomotion 代表作</td><td>大概率即 Robot Parkour Learning（Zipeng Fu 共一）</td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>移动操纵器从桌面拿起苹果</td><td>GDM / Meta 机器人工作</td><td>大厂机器人研究背景成员</td><td><span class="bd bd-i">推断</span></td></tr>
+  <tr><td>Falcon 9 双助推器同步着陆</td><td>航天工程背景</td><td>疑似有 SpaceX 经历的硬件/工程成员</td><td><span class="bd bd-i">推断</span></td></tr>
+  <tr><td>3D 打印摆线针轮减速器剖开</td><td>自研传动</td><td>机械/硬件工程成员</td><td><span class="bd bd-i">推断</span></td></tr>
+</table>
+</div>
+
+<div class="box note">
+  <div class="t">官方自述的能力覆盖（可交叉印证上表）</div>
+  <p>About 页原文：<i>「We are engineers, builders and researchers who pioneered robot learning in dexterous manipulation, mobile manipulation, and legged locomotion, spanning the full stack: <b>from large foundation models to gearboxes, from hands to legs, from visual and tactile perception to high-frequency control</b>.」</i><span class="bd bd-o">官方</span></p>
+  <p style="margin-top:6px">即官方宣称同时具备：大模型（foundation models）— 减速器齿轮箱（gearboxes，硬件传动）— 手（hands，灵巧操作）— 腿（legs，腿足运动）— 视觉与触觉感知 — 高频控制。这与上表反查出的「VIOLA / DenseTact / ToddlerBot / 摆线减速器 / Falcon 9」构成相互印证。<span class="bd bd-i">推断</span></p>
+</div>
+
+<!-- ============ 四、技术路线 ============ -->
+<h2 class="sec-tech"><span class="num">04</span>技术路线：软硬一体的 Omnibody 栈</h2>
+
+<h3>4.1 全景架构</h3>
+
+<figure>
+<div class="figbox">
+<svg viewBox="0 0 860 300" role="img" aria-label="Omnibody 四层架构：采集、数据接口、模型、控制层，最终落到任意机器人本体">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L0,6.4 L7.5,3.2 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <!-- layer boxes -->
+  <g font-family="-apple-system,PingFang SC,sans-serif">
+    <!-- L1 -->
+    <rect x="16" y="24" width="180" height="96" rx="10" fill="#ffffff" stroke="#0d9488" stroke-width="1.6"/>
+    <text x="106" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#0d9488">① Omnibody Hand</text>
+    <text x="106" y="70" text-anchor="middle" font-size="11.5" fill="#3d4551">7-DoF 可穿戴功能手</text>
+    <text x="106" y="88" text-anchor="middle" font-size="11.5" fill="#3d4551">触觉 · 接近 · 力 · 相机</text>
+    <text x="106" y="106" text-anchor="middle" font-size="11.5" fill="#3d4551">视觉惯性 + 电磁追踪</text>
+    <!-- L2 -->
+    <rect x="228" y="24" width="180" height="96" rx="10" fill="#ffffff" stroke="#0d9488" stroke-width="1.6"/>
+    <text x="318" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#0d9488">② One Data Interface</text>
+    <text x="318" y="70" text-anchor="middle" font-size="11.5" fill="#3d4551">多模态流统一封装</text>
+    <text x="318" y="88" text-anchor="middle" font-size="11.5" fill="#3d4551">各模态按原生采样率</text>
+    <text x="318" y="106" text-anchor="middle" font-size="11.5" fill="#3d4551">无 staged 场景 / 无人监督</text>
+    <!-- L3 -->
+    <rect x="440" y="24" width="180" height="96" rx="10" fill="#ffffff" stroke="#0d9488" stroke-width="1.6"/>
+    <text x="530" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#0d9488">③ OM-1（One Model）</text>
+    <text x="530" y="70" text-anchor="middle" font-size="11.5" fill="#3d4551">纯人类数据 · 单阶段训练</text>
+    <text x="530" y="88" text-anchor="middle" font-size="11.5" fill="#3d4551">输入：图像/触觉/接近/位姿</text>
+    <text x="530" y="106" text-anchor="middle" font-size="11.5" fill="#3d4551">输出：方向/速度/力/事件时序</text>
+    <!-- L4 -->
+    <rect x="652" y="24" width="192" height="96" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.6"/>
+    <text x="748" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#ea580c">④ Control Any Body</text>
+    <text x="748" y="70" text-anchor="middle" font-size="11.5" fill="#3d4551">仿真 RL 训练的高频控制层</text>
+    <text x="748" y="88" text-anchor="middle" font-size="11.5" fill="#3d4551">吸收动力学 / 扰动 / 延迟</text>
+    <text x="748" y="106" text-anchor="middle" font-size="11.5" fill="#3d4551">独立时钟 + 在线过渡优化</text>
+
+    <!-- arrows -->
+    <g stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ar)">
+      <line x1="196" y1="72" x2="226" y2="72"/>
+      <line x1="408" y1="72" x2="438" y2="72"/>
+      <line x1="620" y1="72" x2="650" y2="72"/>
+      <line x1="748" y1="120" x2="748" y2="152"/>
+    </g>
+
+    <!-- bodies -->
+    <text x="430" y="176" text-anchor="middle" font-size="12" font-weight="700" fill="#6b7480">同一策略 → 任意本体（无本体专属微调）</text>
+    <g stroke="#c9cfd8" stroke-width="1.4" fill="#ffffff">
+      <rect x="80" y="200" width="150" height="66" rx="9"/>
+      <rect x="255" y="200" width="150" height="66" rx="9"/>
+      <rect x="430" y="200" width="150" height="66" rx="9"/>
+      <rect x="605" y="200" width="150" height="66" rx="9"/>
+    </g>
+    <g font-size="12.5" fill="#3d4551" text-anchor="middle">
+      <text x="155" y="228">桌面机械臂</text><text x="155" y="248" font-size="11" fill="#6b7480">table-top arms</text>
+      <text x="330" y="228">工业机械臂</text><text x="330" y="248" font-size="11" fill="#6b7480">industrial arms</text>
+      <text x="505" y="228">人形机器人</text><text x="505" y="248" font-size="11" fill="#6b7480">humanoids（含全身操作/导航）</text>
+      <text x="680" y="228">轮式移动操纵器</text><text x="680" y="248" font-size="11" fill="#6b7480">mobile manipulators</text>
+    </g>
+
+    <!-- feedback loop -->
+    <path d="M230 288 L230 272 Q230 262 240 262 L636 262 Q646 262 646 272 L646 288" fill="none" stroke="#c9cfd8" stroke-width="1.3" stroke-dasharray="4 4"/>
+    <text x="438" y="256" text-anchor="middle" font-size="11" fill="#8b95a3">数据可跨硬件持续复用 · 「今天采的数据训练还没被设计出来的本体」</text>
+  </g>
+</svg>
+</div>
+<figcaption>图 1：Omnibody 技术栈四层架构。第①②③层与第④层的分离是整套设计的核心——「智能」与「身体」被显式切开。来源：Reward AI 官方 OM-1 博文 <span class="bd bd-o">官方</span>（图中文字为官方原文的中文压缩）。</figcaption>
+</figure>
+
+<h3>4.2 数据采集方式：Omnibody Hand</h3>
+
+<h4>硬件设计取舍：功能灵巧 ≠ 逐关节仿人</h4>
+<p>官方明确反对两条路：一是「脆弱的 20+ 自由度逐关节复刻人手」，二是「平行夹爪」。Omnibody Hand 走中间：一个紧凑的 <b>7 自由度</b>设计，只保留对操纵真正重要的功能。</p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:150px">设计要素</th><th>官方表述</th></tr>
+  <tr><td>精细捏取</td><td>采集拇指-食指对捏，同时记录拇指与食指屈曲，使拇指既能配合食指也能配合其余手指</td></tr>
+  <tr><td>力量抓握</td><td>中指、无名指、小指在掌指关节（MCP）联动，配合拇指屈曲包覆物体</td></tr>
+  <tr><td>手内重定向</td><td>在手中调整物体姿态（in-hand reorientation）被列为三大优先项之一</td></tr>
+  <tr><td>人体工学不变性</td><td>集成的远端屈曲机构吸收指长差异，降低对关节对位的敏感度，<b>免除 per-user 连杆调整</b>。官方理由：佩戴不适会让人改变抓法，而「被补偿过的抓法不再是我们要记录的行为」</td></tr>
+  <tr><td>传感通道</td><td>全局快门手内相机（图像）、高频触觉、指间接近传感、力、手部位姿轨迹</td></tr>
+  <tr><td>追踪方案</td><td>视觉-惯性 + <b>电磁（EM）传感</b>增强，并有算法补偿环境电磁扰动</td></tr>
+</table>
+</div>
+
+<h4>唯一公开的量化指标</h4>
+<figure>
+<div class="figbox">
+<svg viewBox="0 0 860 210" role="img" aria-label="追踪过冲误差对比：电磁方案与视觉惯性方案在 8 档速度下的平均过冲误差">
+  <g font-family="-apple-system,PingFang SC,sans-serif">
+    <text x="16" y="20" font-size="12.5" font-weight="700" fill="#171a1f">平均过冲误差 vs 运动速度（官方自测，8 档速度 × 每档 10 次）</text>
+    <!-- axis -->
+    <line x1="70" y1="170" x2="800" y2="170" stroke="#c9cfd8" stroke-width="1.2"/>
+    <line x1="70" y1="40" x2="70" y2="170" stroke="#c9cfd8" stroke-width="1.2"/>
+    <g font-size="10.5" fill="#8b95a3" text-anchor="end">
+      <text x="62" y="44">30</text><text x="62" y="76">20</text><text x="62" y="108">10</text><text x="62" y="140">5</text><text x="62" y="174">0</text>
+    </g>
+    <g stroke="#eef0f4" stroke-width="1">
+      <line x1="70" y1="140" x2="800" y2="140"/><line x1="70" y1="108" x2="800" y2="108"/>
+      <line x1="70" y1="76" x2="800" y2="76"/><line x1="70" y1="44" x2="800" y2="44"/>
+    </g>
+    <!-- bars: 8 speeds -->
+    <!-- scale: 30mm -> 130px height => 4.333 px/mm ; speed 0..70 cm/s mapped to x 70..800 -->
+    <g>
+      <!-- visual-inertial (orange) -->
+      <rect x="96"  y="161" width="26" height="9"   fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="188" y="157" width="26" height="13"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="280" y="150" width="26" height="20"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="372" y="141" width="26" height="29"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="464" y="128" width="26" height="42"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="556" y="114" width="26" height="56"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="648" y="100" width="26" height="70"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="740" y="62"  width="26" height="108" fill="#fed7aa" stroke="#ea580c"/>
+      <!-- ours EM (teal) -->
+      <rect x="126" y="168" width="26" height="2"   fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="218" y="167" width="26" height="3"   fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="310" y="165" width="26" height="5"   fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="402" y="161" width="26" height="9"   fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="494" y="155" width="26" height="15"  fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="586" y="146" width="26" height="24"  fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="678" y="133" width="26" height="37"  fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="770" y="129" width="26" height="41"  fill="#ccfbf1" stroke="#0d9488"/>
+    </g>
+    <!-- annotations -->
+    <g font-size="10.5" fill="#8b95a3" text-anchor="middle">
+      <text x="124" y="184">3</text><text x="216" y="184">12</text><text x="308" y="184">21</text><text x="400" y="184">30</text>
+      <text x="492" y="184">39</text><text x="584" y="184">48</text><text x="676" y="184">58</text><text x="768" y="184">67</text>
+      <text x="440" y="202" font-size="11">平均速度 (cm/s)</text>
+    </g>
+    <g font-size="11.5" font-weight="700">
+      <text x="753" y="52" fill="#ea580c" text-anchor="middle">24.9 mm　视觉-惯性</text>
+      <text x="783" y="121" fill="#0d9488" text-anchor="middle">9.5 mm　Ours（电磁）</text>
+    </g>
+    <g>
+      <rect x="600" y="28" width="12" height="10" fill="#fed7aa" stroke="#ea580c"/>
+      <text x="618" y="37" font-size="11.5" fill="#3d4551">Visual-inertial</text>
+      <rect x="710" y="28" width="12" height="10" fill="#ccfbf1" stroke="#0d9488"/>
+      <text x="728" y="37" font-size="11.5" fill="#3d4551">Ours (electromagnetic)</text>
+    </g>
+    <text x="16" y="108" font-size="11" fill="#6b7480">平均过冲</text>
+    <text x="16" y="122" font-size="11" fill="#6b7480">误差 (mm)</text>
+  </g>
+</svg>
+</div>
+<figcaption>图 2：官方博文原图的数据重绘。测试设计：两套追踪器刚性共装在同一结构上，在两个已知间距的机械限位之间往返运动，超出固定行程的部分即为过冲。<b>注意：这是采集端（手部追踪）的误差，不是机器人任务成功率。</b><span class="bd bd-o">官方</span></figcaption>
+</figure>
+
+<h4>UMI 谱系定位：这是你最关心的一节</h4>
+<p>Reward AI 没有在官方材料中提「UMI」二字，但从硬件、动作表征到延迟处理，Omnibody Hand 与 UMI 是同一设计范式的迭代。下表把三代设备并排。</p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:112px">维度</th><th>UMI（RSS 2024）</th><th>DexCap（RSS 2024）</th><th><b>Omnibody Hand（2026）</b></th></tr>
+  <tr><td>形态</td><td>3D 打印手持平行夹爪 + GoPro</td><td>胸前相机架（RGB-D LiDAR + 3 台 SLAM 相机）+ 电磁动捕手套 + 背包电源</td><td><b>7-DoF 可穿戴功能手</b>（一体式）</td></tr>
+  <tr><td>末端自由度</td><td>2-DoF 夹爪（仅开合宽度）</td><td>手指 3D 位置（相对手掌，EMF 测）</td><td><b>7-DoF</b>：拇指/食指独立屈曲 + 中/无名/小指 MCP 联动</td></tr>
+  <tr><td>追踪</td><td>GoPro + IMU-aware SLAM（改进 ORB-SLAM3）</td><td>SLAM 相机 + 电磁场</td><td><b>视觉-惯性 + 电磁（EM）</b> + 环境电磁扰动补偿</td></tr>
+  <tr><td>视觉</td><td>155° 鱼眼 + 双侧镜「隐式立体」</td><td>胸前 RGB-D</td><td><b>全局快门手内相机</b>（快速运动下保持视觉上下文）</td></tr>
+  <tr><td>接触 / 力</td><td>无（仅有夹爪宽度本体感知）</td><td>无（纯位置）</td><td><b>触觉 + 指间接近 + 力</b></td></tr>
+  <tr><td>动作表征</td><td>相对轨迹（相对当前夹爪位姿）</td><td>指尖 IK → LEAP 手 16 维关节位置</td><td><b>运动方向 / 速度 / 力 / 事件时序</b>（本体无关）</td></tr>
+  <tr><td>跨本体机制</td><td>要求「平行夹爪行程 &gt; 85 mm」，免标定</td><td>需为每个目标手做 fingertip IK 重定向；用 FK 生成机器人手点云补进观测以弥合视觉鸿沟</td><td><b>不做数据级重定向</b>，交给仿真 RL 控制层吸收</td></tr>
+  <tr><td>采集效率</td><td>约 3× teleoperation</td><td>约 3× teleoperation，接近自然人类速度</td><td>未披露（但按人类自然节拍，无需放慢）</td></tr>
+  <tr><td>代表作式 demo</td><td>动态抛掷 87.5%、洗碗 70%、野外泛化 71.7%</td><td>30 分钟人类 mocap 数据学会新任务，无需遥操作</td><td>&lt;30 分钟学会含挑战动力学的长程新任务</td></tr>
+</table>
+</div>
+
+<div class="box note">
+  <div class="t">UMI 设计的「继承」与「改造」</div>
+  <p><b>继承（5 条）：</b></p>
+  <ol style="margin:6px 0">
+    <li><b>同一套硬件，人戴着采、机器人装上跑。</b>这一条有官方直接证据——OM-1 博文视频 <code>aria-label</code> 原文：<i>「Omnibody Hands in motion, <b>on robot arms and worn by a person</b> at a table」</i>，另有「An Omnibody Hand <b>on a robot arm</b> unscrewing a braided hose fitting」「Two robot arms <b>with Omnibody Hands</b> gripping either side of a cable connector」。<span class="bd bd-o">官方</span></li>
+    <li>便携、in-the-wild、脱离机器人采集。</li>
+    <li>以手部/腕部相机为观测中心（UMI 是腕上 GoPro，Omnibody 是手内全局快门相机）。</li>
+    <li>本体无关的「相对 / 功能」动作表征。</li>
+    <li>显式处理延迟（UMI 做推理时 latency matching；Reward 升级为独立时钟控制层）。</li>
+  </ol>
+  <p style="margin-top:8px"><b>改造（4 条，也是 Reward 声称的差异点）：</b></p>
+  <ol style="margin:6px 0">
+    <li><b>平行夹爪 → 7-DoF 功能手。</b>官方直指 UMI 类方案的软肋：「平行夹爪能解决很多任务，但通常是通过<b>约束接近方向、接触位置与操纵策略</b>来实现的」。对应 Humanoids Daily 的评述：2-DoF 夹爪「人为限制了接近角与接触点」。<span class="bd bd-o">官方</span><span class="bd bd-c">旁证</span></li>
+    <li><b>纯视觉 SLAM → 视觉-惯性 + 电磁。</b>理由：视觉更新率限制了跟随快速反向运动的能力，常见补救是事后平滑轨迹或要求人放慢——两者都会破坏「就是要采快速伸手与细微修正」这个目标。<span class="bd bd-o">官方</span></li>
+    <li><b>补上触觉 / 接近 / 力。</b>补齐纯视觉推断不出的「接触、力、时序」这一层物理信息。</li>
+    <li><b>延迟处理从「对齐」升级为「解耦」。</b>UMI 做的是推理时的观测—动作延迟匹配；Reward 让控制层跑在自己的高频时钟上，并在线优化相邻两次预测的过渡，使推理延迟的抖动完全不打断运动。</li>
+  </ol>
+  <p style="margin-top:8px"><b>谱系可证性：</b>Zipeng Fu 是 <i>UMI on Legs</i>（CoRL 2024）合著者，Chen Wang 是 <i>DexCap</i> 一作——两位创始人分别站在 UMI 分支与 DexCap 分支上，Omnibody Hand 是这两条线的合流。<span class="bd bd-c">旁证·技术溯源</span></p>
+</div>
+
+<h3>4.3 数据标注方式：官方口径是「根本不需要标注」</h3>
+
+<p>这是 OM-1 与主流路线最不相同的一点，值得拆开看。</p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:130px">标注环节</th><th>传统做法</th><th>OM-1 的做法</th><th style="width:84px">性质</th></tr>
+  <tr>
+    <td>动作标签</td>
+    <td>遥操作采集 → 记录机器人关节/末端状态 → 需按本体动作空间对齐</td>
+    <td>标签是<b>传感器内生的</b>：位姿轨迹（追踪）、接触与接近（触觉/接近传感）、力（力传感）、事件时序（抓取/释放，由接触+力信号判定）</td>
+    <td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td>动作重定向</td>
+    <td>DexCap 需 fingertip IK 把人手映射到 LEAP 手；UMI 需按本体夹爪行程过滤</td>
+    <td>官方声称<b>没有数据级重定向</b>：OM-1 直接「从人类运动生成机器人动作」，本体差异交给控制层</td>
+    <td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td>视觉域适配</td>
+    <td>DexCap 用 FK 生成机器人手点云叠加进点云观测，弥合人—机视觉鸿沟</td>
+    <td>未披露类似机制（推测被「同一只 Omnibody Hand 也装在机器人上」这一设计绕过）</td>
+    <td><span class="bd bd-i">推断</span></td>
+  </tr>
+  <tr>
+    <td>数据分桶</td>
+    <td>pre-training / post-training 分阶段，每阶段可能需要不同标注与筛选</td>
+    <td><b>无分界</b>：所有演示经同一接口以同一格式进入，「第一条演示与最新一条演示训同一个策略」</td>
+    <td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td>场景组织</td>
+    <td>staged 实验室场景、专人监督采集</td>
+    <td>官方：无需 staged setup、无人监督，「工作、玩、做饭、或只是过一天」都在产出数据</td>
+    <td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td>质量纠正</td>
+    <td>DexCap 提供 human-in-the-loop 纠正（residual correction 等）</td>
+    <td>未见提及；取而代之的是「涌现的重试/补偿/停止」行为</td>
+    <td><span class="bd bd-c">旁证</span></td>
+  </tr>
+</table>
+</div>
+
+<div class="box warn">
+  <div class="t">标注成本去哪了？（本报告推断）</div>
+  <p>官方把「标注」描述为零成本，但工程上它更可能是<b>被转移到了另外两处</b>，而这两处官方都未披露：<span class="bd bd-i">推断</span></p>
+  <ol style="margin:6px 0">
+    <li><b>采集设备侧</b>：多传感器时空标定、不同佩戴者的一致性、电磁环境扰动补偿——这些是 One Data Interface 的隐性成本，也是 Omnibody Hand 必须自研的原因。</li>
+    <li><b>控制层侧</b>：要「零样本落到任意本体」，就必须为每种目标本体建立足够好的动力学模型与域随机化，并在仿真里训练 RL 控制器。<b>每接入一个新本体，仍有工程量</b>，只是从「重新采一遍数据 + 重新训策略」变成了「训练一个控制层」。</li>
+  </ol>
+  <p style="margin-top:6px">换句话说：Reward 把成本从「<b>数据端·随任务线性增长</b>」搬到了「<b>硬件端·一次性投入</b> + <b>控制端·随本体种类增长</b>」。这个置换是否划算，取决于他们能覆盖多少种本体——而这正是目前完全看不到数字的地方。</p>
+</div>
+
+<h3>4.4 模型 OM-1 与控制层</h3>
+
+<div class="tw">
+<table>
+  <tr><th style="width:120px">模块</th><th>公开的技术要点</th><th style="width:84px">性质</th></tr>
+  <tr><td>输入模态</td><td>图像（场景上下文）、触觉信号（接触与滑动）、指间接近（接触前状态）、手部位姿轨迹；并消费这些流的<b>时间历史</b></td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>采样率处理</td><td><b>按各传感器的原生采样率处理</b>，不统一下采样到相机帧率——保住高频触觉与运动线索</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>输出动作</td><td>运动方向、速度、力、关键事件（抓取/移动）的时序</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>训练范式</td><td>单阶段；无 pre-training / post-training 切分；扩展靠「增加人类数据」而非「为每种机器人设计新训练阶段」</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>架构</td><td>「为高效推理定制的新架构」（未披露任何细节：参数量、backbone、是否 Transformer/Diffusion 均未说明）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>控制层</td><td>仿真中 RL 训练；处理与速度/加速度相关的动力学、外部扰动、系统延迟；<b>独立高频时钟</b>；在线优化相邻两次预测的过渡</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>覆盖能力</td><td>不只桌面操纵，还包括全身工作（支撑、倾身、踏入任务）以及移动机器人的导航</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>效率主张</td><td>&lt;30 分钟人类演示数据学会全新任务（含挑战动力学、长程）；长程任务执行 &lt;30 秒（1× 速度）</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>涌现行为</td><td>一臂失误另一臂自动补偿；知道何时重试；能适应对抗性扰动；环境变化过大时主动停止</td><td><span class="bd bd-o">官方</span></td></tr>
+</table>
+</div>
+
+<h3>4.5 已公开的 Milestone（演示清单）</h3>
+
+<p class="lead">截至 2026-09-19，官方共公开 <b>9 段演示视频</b>（OM-1 博文内嵌，720p／60fps，画面左上角统一带官方「Fully autonomous, 1x speed」水印）与 1 段发布合集。下列任务名直接取自官方 <code>aria-label</code> 与视频文件名。每个任务配 <b>GIF 预览</b>（由官方 mp4 转制）。</p>
+
+<div class="box" style="margin-top:14px">
+  <div class="t">关于这批视频的元数据（本报告新增核实）</div>
+  <p style="margin:4px 0">从官方 9 个 mp4 文件直接读到<b>真实时长</b>：最短 9.9 s（cross-embodiment），最长 <b>158.6 s</b>（iphone-long）。其中 laundry 原片 16.5 s，与官方文案「约 17 秒」吻合——说明<b>视频长度≈单次任务时长</b>。由此得到一个官方未说明的观察：官方口径是「长程任务执行 &lt; 30 秒（1× 速度）」，但 <b>ethernet-unplug（107.8 s）与 iphone-long（158.6 s）远超 30 秒</b>，二者应包含多次重试或连续多循环作业，而非单次任务。<span class="bd bd-i">推断</span></p>
+</div>
+
+<div class="mlgrid">
+
+  <div class="ml hl">
+    <div class="shot"><span class="n1x">旗舰演示</span><span class="lbl">原片 9.9s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/cross-embodiment.gif" alt="cross-embodiment 演示：人形与工业臂同一策略分拣" loading="eager"></div>
+    <div class="in">
+      <div class="nm">cross-embodiment <span class="sid">跨本体分拣</span></div>
+      <p class="ds">人形机器人与一对工业臂<b>都装了 Omnibody Hand</b>，在同一策略下把传送带上的物品分拣入箱。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>跨本体同一策略</b></span><span class="cap">官方章节 · Omnibody Hand</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">原片 14.9s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/omnibody-hands.gif" alt="Omnibody Hand 硬件特写：装机与佩戴" loading="eager"></div>
+    <div class="in">
+      <div class="nm">omnibody-hands <span class="sid">硬件本体特写</span></div>
+      <p class="ds">Omnibody Hand 运动特写——<b>同一只手既装在机器人臂上，也被演示者戴在手上</b>。这是「人戴采集、机装执行」同构主张最直接的画面证据。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>采集与执行的硬件同构</b></span><span class="cap">官方章节 · Omnibody Hand</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">原片 26.0s · GIF 节选</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/sorting-2.gif" alt="传送带分拣抛投演示" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">sorting-2 <span class="sid">传送带分拣</span></div>
+      <p class="ds">两只机械臂从移动传送带上抓取物体并<b>抛入</b>料箱。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>动态目标 + 高速节拍</b></span><span class="cap">官方章节 · Conclusion</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">原片 16.5s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/unscrew.gif" alt="双臂拧开编织软管接头" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">unscrew <span class="sid">拧开软管接头</span></div>
+      <p class="ds">装在机械臂上的 Omnibody Hand 在传送带上方拧开编织软管接头，<b>另一臂扶稳组件</b>。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>双臂分工 + 旋拧</b></span><span class="cap">官方章节 · 功能灵巧性</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">原片 107.8s · GIF 节选</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/ethernet-unplug.gif" alt="拔开以太网连接器卡扣" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">ethernet-unplug <span class="sid">拔网线卡扣</span></div>
+      <p class="ds">两臂用 Omnibody Hand 抓住连接器两侧并拔开；<b>需极精确按压卡扣才能释放</b>。被创始人点名为「deceptively hard」。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>精细接触 + 力控</b></span><span class="cap">官方章节 · 多模态原生采样率</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">原片 13.6s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/pick-and-toss.gif" alt="人形机器人取件并抛掷" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">pick-and-toss <span class="sid">取件抛投</span></div>
+      <p class="ds">人形机器人从料架取件并<b>抛掷</b>一旁。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>人形 + 动态抛掷</b></span><span class="cap">官方章节 · Conclusion</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">原片 158.6s · GIF 节选</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/iphone-long.gif" alt="四臂协同手机包装长程任务" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">iphone-long <span class="sid">手机包装长程任务</span></div>
+      <p class="ds">手机包装长程任务，发布中展示<b>四臂协同（quadmanual）</b>。是 9 段视频中时长最长的一段。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>长程 + 多机协作</b></span><span class="cap">官方章节 · 多模态原生采样率</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">原片 16.5s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/laundry.gif" alt="双臂折叠床单" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">laundry <span class="sid">折叠床单</span></div>
+      <p class="ds">两臂在洗衣店折叠床单。<b>原片 16.5 s 与官方文案「约 17 秒」一致</b>，是唯一可交叉验证时长的演示。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>柔性物体 + 长程</b></span><span class="cap">官方章节 · Conclusion</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">原片 10.5s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/fridge.gif" alt="人形拉开冰箱门取饮料" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">fridge <span class="sid">开冰箱取物</span></div>
+      <p class="ds">人形拉开<b>完全关闭的不锈钢冰箱门</b>并伸手取饮料。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>未知负载 + 抗扰控制</b></span><span class="cap">官方章节 · 控制层独立时钟</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+  <div class="ml" style="justify-content:center">
+    <div class="in">
+      <div class="nm">另见 · bartending <span class="sid">发布合集内</span></div>
+      <p class="ds">倒酒液、加冰、摇壶、拔瓶塞、倒入杯中，一次性完成。该片段出现在官方发布视频中，官网博文<b>未提供独立 mp4</b>，故无 GIF。</p>
+      <div class="ft"><span class="cap">能力指向 · <b>长程多步骤</b></span><span class="cap">官方章节 · 发布视频</span><span class="bd bd-o">官方</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="box">
+  <div class="t">GIF 的制作口径（可复现，避免误读）</div>
+  <ul style="margin:6px 0">
+    <li><b>来源</b>：全部取自官网博文的官方 mp4 直链（<code>/blog/OM-1/videos/*-720-h264-labeled.mp4</code>），未做任何裁剪或变速。</li>
+    <li><b>转制</b>：ffmpeg 降采样至宽 320 px、96 色、4.5–7 fps。因此 <b>GIF 比原片卡顿，不代表官方帧率</b>；原片为 60 fps。</li>
+    <li><b>节选说明</b>：<code>sorting-2</code>、<code>ethernet-unplug</code>、<code>iphone-long</code> 三段因原片过长（26 s / 107.8 s / 158.6 s），GIF 采用<b>均匀抽样的多片段拼接</b>，非连续播放。其余 6 段为完整时长。</li>
+    <li><b>保真度</b>：GIF 保留了原片的水印与「labeled」标注层，可作为官方「1× 速度」主张的原始证据。</li>
+    <li><b>体积</b>：9 个 GIF 合计约 <b>12 MB</b>，单个 0.7–1.8 MB，均已启用懒加载；单个文件均 &lt; 2 MB，<b>可直接用于微信公众号动图</b>（上限 10 MB）。</li>
+    <li><b>原始 mp4 与官方视频</b>：全部 9 个 mp4 已本地留存；完整发布合集见 <a href="https://youtu.be/IJvyS2aPsnA" target="_blank" rel="noopener">YouTube 官方视频</a>。</li>
+  </ul>
+</div>
+
+<h3>4.6 时间线</h3>
+
+<div class="tl">
+  <div class="it"><div class="d">2019–2020</div><div class="h">触觉与姿态估计积累</div><div class="b">Chen Wang 在 MIT CSAIL（GelSight 组）做 SwingBot（IROS 2020 最佳论文）；DenseFusion（CVPR 2019）、6-PACK（ICRA 2020）。<span class="bd bd-c">旁证</span></div></div>
+  <div class="it"><div class="d">2021–2022</div><div class="h">腿足自适应 + 全身控制</div><div class="b">RMA（RSS 2021）、Deep Whole-Body Control（CoRL 2022, Oral / Best Systems Finalist）。Zipeng Fu 在 CMU → Stanford。<span class="bd bd-c">旁证</span></div></div>
+  <div class="it"><div class="d">2023</div><div class="h">跨本体与人类数据两条线并行</div><div class="b">Robot Parkour Learning（CoRL 2023）；MimicPlay / Sequential Dexterity / VoxPoser（CoRL 2023）；Open X-Embodiment（ICRA 2024）。<span class="bd bd-c">旁证</span></div></div>
+  <div class="it"><div class="d">2024-03 / 2024-06</div><div class="h">DexCap 问世（OM-1 的技术原点）</div><div class="b">arXiv 预印本 → RSS 2024。便携 mocap 采人类灵巧操作，吞吐约 3× 遥操作，30 分钟人类数据学会新任务。<span class="bd bd-o">官方引用</span><span class="bd bd-c">旁证</span></div></div>
+  <div class="it"><div class="d">2024-11</div><div class="h">Mobile ALOHA / HumanPlus / UMI on Legs</div><div class="b">同届 CoRL 三连。Zipeng Fu 在其中两篇为共同一作，并参与 UMI on Legs。<span class="bd bd-c">旁证</span></div></div>
+  <div class="it"><div class="d">2025</div><div class="h">Reward AI 成立</div><div class="b">LinkedIn 公司页标注 Founded 2025；Chen Wang 2025-06 斯坦福 CS 博士毕业。<span class="bd bd-o">官方</span></div></div>
+  <div class="it hi"><div class="d">2026-09-14</div><div class="h">走出隐身，发布 OM-1</div><div class="b">官网 + 官方 X/LinkedIn 同步首发；公布 Omnibody 全栈与 9 段演示；英伟达 Jim Fan 评论「So smooth」；X 帖 &gt;2000 赞。<span class="bd bd-o">官方</span><span class="bd bd-c">旁证</span></div></div>
+  <div class="it"><div class="d">未公布（官方预告）</div><div class="h">quadmanual → 混合机器人团队；人形全身操作与导航</div><div class="b">官方原话：「beginning with quadmanual manipulation … and extending to mixed teams that read each other's intent, hand off objects, divide roles, and recover together」；「OM-1 can power humanoids to do whole-body manipulation and navigation. <b>More on this later.</b>」<span class="bd bd-o">官方</span></div></div>
+</div>
+
+<!-- ============ 五、商业化 ============ -->
+<h2 class="sec-biz"><span class="num">05</span>商业化战略与现状</h2>
+
+<h3>5.1 现状：可以确认的事实</h3>
+
+<div class="tw">
+<table>
+  <tr><th style="width:120px">维度</th><th>状态</th><th style="width:84px">性质</th></tr>
+  <tr><td>融资</td><td><b>完全未披露</b>——金额、轮次、投资方均无。第三方行业通讯明确指出「截至本次发布，Reward 的官网尚未披露融资金额和投资方」</td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>客户 / 部署</td><td>未披露任何客户名、部署数量或试点</td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>定价 / 时间表</td><td>无商业化时间表、无定价</td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>开放策略</td><td>模型权重、代码、数据集、API 全部内部保留；无论文发表；官方要求引用形式为「blog article」</td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>团队规模</td><td>11–50 人；招聘邮箱 careers@rewardai.com 在官网显著位置</td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>本体合作</td><td>公开材料中未点名本体厂商。有一条待核实的第三方线索指向 Flexiv（非夕）Rizon 臂参与过演示，<b>未能二次核实</b></td><td><span class="bd bd-i">推断·待核实</span></td></tr>
+</table>
+</div>
+
+<h3>5.2 战略信号：从官方措辞里读出来的东西</h3>
+
+<div class="tw">
+<table>
+  <tr><th style="width:220px">官方表述（原文）</th><th>解读</th><th style="width:84px">性质</th></tr>
+  <tr>
+    <td><i>「Efficiency is ROI. ROI is what gets robots deployed.」</i></td>
+    <td>把「效率」直接定义成投资回报。这不是研究者的措辞，是卖给工厂的措辞</td><td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td><i>「If other models look faster, check the corner of the frame: 2x, sometimes 5x.」</i></td>
+    <td>主动挑起「速度造假」议题，把 1× 原速做成品牌资产。攻击性定位</td><td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td><i>「Every clip we publish runs at 1x speed, clearly labeled.」</i></td>
+    <td>同上，写进了 About 页的方法论部分，不是临时公关话术</td><td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td><i>「can be dropped onto whatever robots already <b>stand on a customer's floor</b>」</i></td>
+    <td><b>不卖本体</b>。目标客户是已经买了机器人的工厂 / 集成商 —— 存量设备升级，而不是卖新硬件</td><td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td><i>「A robot earns its place in a factory, a kitchen, or a warehouse …」</i></td>
+    <td>目标场景：工厂、厨房、仓库。与演示任务（3C 包装、传送带分拣、折衣、调酒）一致</td><td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td><i>「beginning with quadmanual manipulation … extending to mixed teams」</i></td>
+    <td>多机协作是差异化叙事：瞄准「单臂干不了的活」（搬家具、大件装配、高峰期厨房）</td><td><span class="bd bd-o">官方</span></td>
+  </tr>
+  <tr>
+    <td><i>「demonstrations we collect today will still be training robot bodies that haven't been designed yet」</i></td>
+    <td>数据资产论：数据不随硬件换代贬值，而是<b>升值</b>。这是给投资人和客户的双重叙事</td><td><span class="bd bd-o">官方</span></td>
+  </tr>
+</table>
+</div>
+
+<h3>5.3 商业化路径推断</h3>
+
+<div class="box">
+  <div class="t">本报告判断（<span class="bd bd-i">推断</span>，非官方确认）</div>
+  <p><b>大概率路径：B2B，向已有机器人存量的客户提供「策略 + 控制层」的部署/授权，同时可能出租或销售 Omnibody Hand 采集设备用于客户现场采任务数据。</b>推理链条：</p>
+  <ol style="margin:6px 0">
+    <li>不开源、无 API → 排除了「做社区标准/生态平台」的路子，价值捕获必须发生在交付环节。</li>
+    <li>「drop onto whatever robots already stand on a customer's floor」→ 明确不造本体，因此收入不可能靠硬件整机，只能靠软件能力 + 采集设备。</li>
+    <li>「Efficiency is ROI」+ 反复强调节拍 → 卖点是替代人工的每小时产出，计价方式很可能是按部署站点/机器人数量，而非按 token 或按模型调用。</li>
+    <li>招聘邮箱置顶 + 11–50 人规模 + 刚走出隐身 → 处于「建交付能力」而非「建销售网络」的阶段，近期更可能是少数深度试点而非广铺。</li>
+  </ol>
+  <p style="margin-top:8px"><b>核心壁垒判断：</b>不是模型本身，而是「<b>采集设备—数据接口—控制层</b>」这条闭环。任何一环缺了，跨本体就退化成普通 VLA。这也意味着：他们的护城河高度依赖 Omnibody Hand 的可制造性与成本——而这恰恰是公开信息里最薄的一环。</p>
+</div>
+
+<h3>5.4 竞争格局定位</h3>
+
+<div class="tw">
+<table>
+  <tr><th style="width:130px">路线</th><th style="width:170px">代表公司</th><th>数据入口</th><th style="width:84px">性质</th></tr>
+  <tr>
+    <td><b>人手可穿戴采集</b><br>（Reward 所在）</td>
+    <td><b>Reward AI</b></td>
+    <td>7-DoF 功能手 + 触觉/接近/力 + EM 追踪；<b>功能性中间路线</b>——比 2-DoF 表达力强，比 20+ DoF 同构更解耦</td><td><span class="bd bd-o">官方</span><span class="bd bd-c">旁证</span></td>
+  </tr>
+  <tr>
+    <td>同上 · 最贴近的对手</td>
+    <td>Sunday Robotics<br>（Tony Zhao + Cheng Chi）</td>
+    <td>Skill Capture Glove：更简单的 2-DoF 平行夹爪式；强调手套与自研 Memo 机器人手的<b>几何与传感器对应</b>；主攻家务（折衣）</td><td><span class="bd bd-c">旁证</span></td>
+  </tr>
+  <tr>
+    <td>严格同构路线</td>
+    <td>X Square Robot（深圳）</td>
+    <td>TwinDEX：9-DoF 外骨骼，通过与配套三指机器人手<b>严格物理同构</b>来消除具身鸿沟</td><td><span class="bd bd-c">旁证</span></td>
+  </tr>
+  <tr>
+    <td>互联网视频预训练</td>
+    <td>Dyna Robotics（Dyna-2）<br>Rhoda AI（DVA）</td>
+    <td>海量网络/人类视频预训练 + 任务数据后训练。Rhoda 报告最大模型 100 秒内无人介入完成率 84.7%</td><td><span class="bd bd-c">旁证</span></td>
+  </tr>
+  <tr>
+    <td>VLA / 基础模型</td>
+    <td>Physical Intelligence（π0）<br>Gemini Robotics 1.5 / 2<br>Skild AI（S1）、Generalist（GEN-1.5）</td>
+    <td>开放机器人数据集 + 遥操作 + 合成数据混合。Gemini Robotics 2 称可用数小时、通常 &lt;200 个样本适配新双臂机器人</td><td><span class="bd bd-c">旁证</span></td>
+  </tr>
+  <tr>
+    <td>数据基础设施</td>
+    <td>XDOF（GELLO 系）、Mecka AI</td>
+    <td>把采集/清洗/标注/质控外包成服务；XDOF 6 月披露 7000 万美元融资并开源 ABC-130K（13 万条双臂轨迹 / 195 类任务）</td><td><span class="bd bd-c">旁证</span></td>
+  </tr>
+</table>
+</div>
+
+<!-- ============ 六、风险 ============ -->
+<h2 class="sec-risk"><span class="num">06</span>关键风险与待验证清单</h2>
+
+<div class="box warn">
+  <div class="t">七条风险</div>
+  <ol style="margin:6px 0">
+    <li><b>所有性能指标均为公司自测。</b>唯一可量化的数字（24.9 → 9.5 mm）测的是<b>采集端追踪误差</b>，不是任务成功率。第三方（Humanoids Daily、humanoid.guide）均明确指出：无大规模成功率数据、无论文、无开源。<span class="bd bd-c">旁证</span></li>
+    <li><b>「Any Body」的边界需要澄清。</b>官方视频 <code>aria-label</code> 显示，跨本体演示中的人形与工业臂<b>都装了 Omnibody Hand</b>。若「零样本跨本体」的前提是本体必须装上同一只手，那么它的适用范围与「随便什么机器人即插即用」之间存在口径差。这是本报告认为最值得向官方追问的一点。<span class="bd bd-o">官方素材</span><span class="bd bd-i">推断</span></li>
+    <li><b>无第三方复现路径。</b>权重、代码、数据集、API 全不开放，外界无法独立验证。<span class="bd bd-c">旁证</span></li>
+    <li><b>融资不透明。</b>无金额、无投资方，无法评估 runway 与可获得算力。在一个「算力即壁垒」的赛道里，这是重大信息缺口。<span class="bd bd-c">旁证</span></li>
+    <li><b>「&lt;30 分钟」容易被误读。</b>第三方通讯特别澄清：这指的是<b>演示数据量</b>，不是端到端训练耗时。<span class="bd bd-c">旁证</span></li>
+    <li><b>长期运行稳定性未验证。</b>行业对标的是「99.9% uptime」，而实验室演示与产线连续运行之间还有很长的路——这也是 Skild AI 等公司公开挑战「demo culture」的核心论点。<span class="bd bd-c">旁证</span></li>
+    <li><b>采集设备的规模化未验证。</b>Omnibody Hand 集成了 7-DoF 机构、触觉阵列、接近传感、全局快门相机、EM 追踪——它的成本、良率、耐用性、标定流程，是整条路线能否规模化的物理瓶颈，而官方对此零披露。<span class="bd bd-i">推断</span></li>
+  </ol>
+</div>
+
+<h4>未来 3–12 个月观察清单</h4>
+<ul>
+  <li>是否发布论文或完整技术报告（当前引用形式仍是 blog article）</li>
+  <li>是否给出标准化成功率与失败案例（而非仅演示视频）</li>
+  <li>是否出现第三方测试、客户部署或试点披露</li>
+  <li>是否披露融资金额与投资方</li>
+  <li>是否开放 API / 权重 / 数据集</li>
+  <li>quadmanual 多机协作与人形全身操作 + 导航的后续进展（官方已预告 "More on this later"）</li>
+  <li>Omnibody Hand 是否会单独对外（销售/租赁/开源硬件）</li>
+</ul>
+
+<!-- ============ 附录 ============ -->
+<h2 class="sec-source"><span class="num">07</span>附录：核心信息源速查</h2>
+
+<div class="tw">
+<table>
+  <tr><th style="width:44px">#</th><th style="width:230px">来源</th><th>URL</th><th style="width:60px">性质</th></tr>
+  <tr><td>S04</td><td>OM-1 技术博文（一级来源）</td><td><a href="https://www.rewardai.com/blog/OM-1/" target="_blank" rel="noopener">rewardai.com/blog/OM-1/</a></td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>S02</td><td>About us（CEO 署名）</td><td><a href="https://www.rewardai.com/about/" target="_blank" rel="noopener">rewardai.com/about/</a></td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>S11</td><td>Zipeng Fu 首发帖</td><td><a href="https://www.linkedin.com/posts/zipengfu_introducing-reward-ai-om-1-our-first-robot-activity-7505325034253660160-QOds" target="_blank" rel="noopener">LinkedIn · zipengfu</a></td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>S12</td><td>Zipeng Fu 个人主页 / CV</td><td><a href="https://zipengfu.github.io/" target="_blank" rel="noopener">zipengfu.github.io</a></td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>S14</td><td>Chen Wang 个人主页</td><td><a href="https://www.chenwangjeremy.net" target="_blank" rel="noopener">chenwangjeremy.net</a></td><td><span class="bd bd-o">官方</span></td></tr>
+  <tr><td>S16</td><td>DexCap（RSS 2024）项目页</td><td><a href="https://dex-cap.github.io/" target="_blank" rel="noopener">dex-cap.github.io</a></td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>S24</td><td>UMI（RSS 2024）项目页</td><td><a href="https://umi-gripper.github.io/" target="_blank" rel="noopener">umi-gripper.github.io</a></td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>S35</td><td>Humanoids Daily · 走出隐身报道</td><td><a href="https://www.humanoidsdaily.com/news/reward-ai-exits-stealth-with-om-1-pitching-zero-shot-human-to-robot-manipulation" target="_blank" rel="noopener">humanoidsdaily.com</a></td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>S36</td><td>RuntimeWire · OM-1 发布</td><td><a href="https://runtimewire.com/article/reward-ai-om-1-robot-foundation-model-human-data" target="_blank" rel="noopener">runtimewire.com</a></td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>S42</td><td>腾讯新闻 · Mobile ALOHA 作者新模型</td><td><a href="https://new.qq.com/rain/a/20260916A05H9Q00" target="_blank" rel="noopener">new.qq.com</a></td><td><span class="bd bd-c">旁证</span></td></tr>
+  <tr><td>S44</td><td>SOURCEMIND · 北美具身公司名单</td><td>行业通讯（明确指出融资未披露）</td><td><span class="bd bd-c">旁证</span></td></tr>
+</table>
+</div>
+
+<footer>
+  报告生成：2026-09-19 ｜ 调研口径：公开信息（官网 / 官方社媒 / 学术论文与项目页 / 第三方媒体）<br>
+  报告中标注 <span class="bd bd-o">官方</span> 的内容来自 Reward AI 官方渠道或其创始人本人署名内容；标注 <span class="bd bd-c">旁证</span> 的内容来自学术论文、项目页或第三方媒体/档案；标注 <span class="bd bd-i">推断</span> 的内容为本报告基于上述材料的推理，未经官方确认。<br>
+  本报告不构成任何投资建议。所有性能数据在获第三方独立复现前，应视为公司自述。
+</footer>
+
+</div>
+</div>

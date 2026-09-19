@@ -1,0 +1,881 @@
+---
+lang: en
+ref: 2026-09-19-reward-ai-deep-dive
+layout: post
+permalink: /en/posts/2026/09/19/reward-ai-deep-dive/
+title: "Reward AI Deep-Dive Research Report"
+date: 2026-09-19
+tags: [AI 总结]
+excerpt: "A cross-embodiment robot foundation model company out of the Stanford DexCap / Mobile ALOHA lineage: a self-built 7-DoF wearable, Omnibody Hand, records human manipulation as multimodal streams and trains the generalist policy OM-1 — One Model, One Data Interface, Any Body."
+---
+
+<style scoped>
+.wd-doc{
+    --ink:#171a1f; --ink-2:#3d4551; --muted:#6b7480; --line:#e4e7ec; --line-2:#eef0f4;
+    --bg:#ffffff; --bg-soft:#f7f8fa; --bg-soft-2:#fbfcfd;
+    --c-summary:#1e40af;
+    --c-source:#475569;
+    --c-team:#7c3aed;
+    --c-tech:#0d9488;
+    --c-biz:#ea580c;
+    --c-risk:#be123c;
+    --official:#2563eb; --official-bg:#eff6ff;
+    --corrob:#0d9488; --corrob-bg:#f0fdfa;
+    --infer:#ea580c;  --infer-bg:#fff7ed;
+    --radius:12px;
+  }.wd-doc, .wd-doc *{box-sizing:border-box}.wd-doc{-webkit-text-size-adjust:100%}.wd-doc{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    font-size:16px; line-height:1.75; letter-spacing:.01em;
+  }.wd-doc .wrap{max-width:880px;margin:0 auto;padding:0 20px 96px}.wd-doc a{color:var(--official);text-decoration:none;border-bottom:1px solid rgba(37,99,235,.28)}.wd-doc a:hover{border-bottom-color:var(--official)}.wd-doc .cover{padding:56px 0 8px}.wd-doc .cover .kicker{font-size:12px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-bottom:18px}.wd-doc .cover h1{font-size:38px;line-height:1.22;margin:0 0 10px;font-weight:700;letter-spacing:-.01em}.wd-doc .cover .sub{font-size:19px;color:var(--ink-2);font-weight:500;margin:0 0 6px}.wd-doc .cover .meta{font-size:13px;color:var(--muted);margin-top:18px}.wd-doc .cover .meta span{margin-right:16px;display:inline-block}.wd-doc .srcline{
+    margin:22px 0 0;padding:12px 14px;background:var(--bg-soft);border:1px solid var(--line);
+    border-radius:10px;font-size:13.5px;line-height:1.9;color:var(--ink-2)
+  }.wd-doc .srcline b{font-weight:600;color:var(--ink)}.wd-doc .bd{display:inline-block;font-size:11px;line-height:1.6;padding:1px 7px;border-radius:4px;font-weight:600;white-space:nowrap;vertical-align:baseline;border:1px solid transparent}.wd-doc .bd-o{color:var(--official);background:var(--official-bg);border-color:#dbeafe}.wd-doc .bd-c{color:var(--corrob);background:var(--corrob-bg);border-color:#ccfbf1}.wd-doc .bd-i{color:var(--infer);background:var(--infer-bg);border-color:#fed7aa}.wd-doc .legend{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;font-size:12px;color:var(--muted)}.wd-doc .legend .bd{font-size:11px}.wd-doc h2{
+    font-size:25px;margin:64px 0 4px;font-weight:700;letter-spacing:-.01em;
+    padding-top:22px;border-top:1px solid var(--line)
+  }.wd-doc h2 .num{display:inline-block;font-size:12px;letter-spacing:.18em;color:var(--muted);vertical-align:middle;margin-right:12px;font-weight:600}.wd-doc h2.sec-summary{border-color:var(--c-summary)}.wd-doc h2.sec-summary .num{color:var(--c-summary)}.wd-doc h2.sec-source{border-color:var(--c-source)}.wd-doc h2.sec-source .num{color:var(--c-source)}.wd-doc h2.sec-team{border-color:var(--c-team)}.wd-doc h2.sec-team .num{color:var(--c-team)}.wd-doc h2.sec-tech{border-color:var(--c-tech)}.wd-doc h2.sec-tech .num{color:var(--c-tech)}.wd-doc h2.sec-biz{border-color:var(--c-biz)}.wd-doc h2.sec-biz .num{color:var(--c-biz)}.wd-doc h2.sec-risk{border-color:var(--c-risk)}.wd-doc h2.sec-risk .num{color:var(--c-risk)}.wd-doc h3{font-size:19px;margin:34px 0 8px;font-weight:650;color:var(--ink)}.wd-doc h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink-2)}.wd-doc p{margin:10px 0}.wd-doc ul, .wd-doc ol{margin:10px 0;padding-left:22px}.wd-doc li{margin:5px 0}.wd-doc .lead{color:var(--ink-2)}.wd-doc .box{border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin:16px 0;background:var(--bg-soft-2)}.wd-doc .box.k{border-left:3px solid var(--c-summary)}.wd-doc .box.warn{border-left:3px solid var(--c-risk);background:#fff7f9}.wd-doc .box.note{border-left:3px solid var(--c-tech)}.wd-doc .box .t{font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:6px;color:var(--ink)}.wd-doc .box p{margin:6px 0;font-size:14.5px}.wd-doc .tw{overflow-x:auto;margin:14px 0;-webkit-overflow-scrolling:touch}.wd-doc table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:600px}.wd-doc th, .wd-doc td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}.wd-doc th{background:var(--bg-soft);font-weight:650;color:var(--ink-2);font-size:12.5px;letter-spacing:.02em}.wd-doc td{color:var(--ink-2);line-height:1.62}.wd-doc tr:nth-child(even) td{background:var(--bg-soft-2)}.wd-doc .tag{font-size:11px;font-weight:700}.wd-doc figure{margin:22px 0}.wd-doc figcaption{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.6}.wd-doc .figbox{border:1px solid var(--line);border-radius:var(--radius);padding:16px 14px;background:var(--bg-soft-2);overflow-x:auto}.wd-doc svg{display:block;max-width:100%;height:auto}.wd-doc .tl{margin:18px 0;border-left:2px solid var(--line);padding-left:0}.wd-doc .tl .it{position:relative;padding:0 0 20px 22px;margin-left:1px}.wd-doc .tl .it:before{content:"";position:absolute;left:-6px;top:8px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--c-tech)}.wd-doc .tl .it.hi:before{background:var(--c-biz);border-color:var(--c-biz)}.wd-doc .tl .d{font-size:12px;font-weight:700;color:var(--c-tech);letter-spacing:.04em}.wd-doc .tl .it.hi .d{color:var(--c-biz)}.wd-doc .tl .h{font-size:15px;font-weight:650;margin:1px 0 2px}.wd-doc .tl .b{font-size:13.5px;color:var(--ink-2);line-height:1.65}.wd-doc .pc{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:18px 0}.wd-doc .pc .hd{padding:13px 18px;background:var(--bg-soft);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}.wd-doc .pc .hd .n{font-size:18px;font-weight:700}.wd-doc .pc .hd .r{font-size:13px;color:var(--muted)}.wd-doc .pc .bd2{padding:14px 18px}.wd-doc .pc .bd2:last-child{padding-bottom:18px}.wd-doc .kv{display:grid;grid-template-columns:104px 1fr;gap:6px 14px;font-size:14px;margin:10px 0}.wd-doc .kv dt{color:var(--muted);font-size:13px}.wd-doc .kv dd{margin:0;color:var(--ink-2)}.wd-doc .pill{display:inline-block;font-size:12px;padding:2px 9px;border:1px solid var(--line);border-radius:20px;color:var(--ink-2);background:#fff;margin:2px 4px 2px 0}.wd-doc .mlgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:14px 0 8px}.wd-doc .ml{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;display:flex;flex-direction:column}.wd-doc .ml .shot{position:relative;line-height:0;background:var(--bg-soft);border-bottom:1px solid var(--line);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden}.wd-doc .ml .shot img{width:100%;height:100%;object-fit:contain;display:block}.wd-doc .ml .shot .lbl{position:absolute;top:8px;right:8px;font-size:11px;font-weight:700;line-height:1.5;letter-spacing:.03em;color:var(--ink);background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:5px;padding:2px 7px}.wd-doc .ml .shot .n1x{position:absolute;top:8px;left:8px;font-size:11px;font-weight:700;line-height:1.5;letter-spacing:.03em;color:#0f5c3f;background:rgba(236,253,245,.95);border:1px solid #a7f3d0;border-radius:5px;padding:2px 7px}.wd-doc .ml .in{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1}.wd-doc .ml .nm{font-size:15px;font-weight:700;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;line-height:1.35}.wd-doc .ml .nm .sid{font-size:11.5px;font-weight:600;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.wd-doc .ml .ds{font-size:13.5px;color:var(--ink-2);line-height:1.62;margin:0}.wd-doc .ml .ft{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:auto;padding-top:6px}.wd-doc .ml .cap{font-size:11.5px;color:var(--muted);background:var(--bg-soft);border:1px solid var(--line);border-radius:5px;padding:2px 7px;line-height:1.6}.wd-doc .ml .cap b{color:var(--ink-2);font-weight:650}.wd-doc .ml.hl{border-color:#cfe0fb;background:#fff}.wd-doc .ml.hl .shot{background:#eff6ff}.wd-doc .sechead{font-size:12.5px;font-weight:700;letter-spacing:.05em;color:var(--c-tech);margin:22px 0 0;text-transform:uppercase}.wd-doc .sechead span{color:var(--muted);font-weight:600;letter-spacing:0;text-transform:none}.wd-doc footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.8}
+
+  @media (max-width:900px){.wd-doc .mlgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:600px){.wd-doc .cover{padding:36px 0 4px}.wd-doc .cover h1{font-size:28px}.wd-doc .cover .sub{font-size:16px}.wd-doc h2{font-size:21px;margin-top:48px}.wd-doc h3{font-size:17px}.wd-doc{font-size:15.5px}.wd-doc .kv{grid-template-columns:1fr}.wd-doc .kv dt{margin-top:8px}.wd-doc .mlgrid{grid-template-columns:1fr;gap:14px}
+  }
+
+</style>
+
+<div class="wd-doc">
+<div class="wrap">
+
+<!-- ============ COVER ============ -->
+<header class="cover">
+  <svg viewBox="0 0 880 150" role="img" aria-label="Minimal line illustration: a human hand outline and a robot arm connected through the same interface">
+    <g fill="none" stroke="#c9cfd8" stroke-width="1.4" stroke-linecap="round">
+      <path d="M60 108 L60 44 q0-14 14-14 t14 14 q0-9 9-9 t9 9 q0-8 8-8 t8 8 q0-7 8-7 t8 7 L138 70 q-4 34-24 40 z"/>
+      <path d="M60 108 q-6 12 6 16 h56 q12-4 6-16"/>
+      <path d="M158 76 h48"/>
+      <circle cx="228" cy="76" r="20"/>
+      <path d="M228 56 v-16 M228 96 v16 M208 76 h-16 M248 76 h16"/>
+      <path d="M258 76 h44"/>
+      <rect x="316" y="46" width="52" height="60" rx="8"/>
+      <path d="M368 76 h56"/>
+      <path d="M424 76 l30-22 M424 76 l30 22 M454 54 l16-8 M454 98 l16 8"/>
+      <circle cx="492" cy="42" r="7"/><circle cx="492" cy="110" r="7"/>
+      <path d="M330 46 v-22 h24 v22" stroke-dasharray="3 3"/>
+      <path d="M560 76 h60" stroke-dasharray="4 4"/>
+      <path d="M620 76 a22 22 0 0 1 22 -22 h18 a22 22 0 0 1 22 22 v10 a22 22 0 0 1 -22 22 h-18 a22 22 0 0 1 -22 -22 z" opacity=".55"/>
+      <path d="M700 76 h60" stroke-dasharray="4 4"/>
+      <path d="M760 76 l26-16 M786 60 l26-6 M760 76 l26 16 M786 92 l26 6"/>
+    </g>
+    <g fill="#8b95a3" font-family="-apple-system,PingFang SC,sans-serif" font-size="11" letter-spacing="1.2">
+      <text x="60" y="132">HUMAN HAND</text>
+      <text x="228" y="132" text-anchor="middle">ONE DATA INTERFACE</text>
+      <text x="342" y="132" text-anchor="middle">OM-1</text>
+      <text x="500" y="132" text-anchor="middle">CONTROL</text>
+      <text x="676" y="132" text-anchor="middle">ANY BODY</text>
+    </g>
+  </svg>
+
+  <div class="kicker">Embodied AI Company Deep Dive</div>
+  <p class="sub">A cross-embodiment robot foundation model company grown out of the Stanford DexCap / Mobile ALOHA lineage</p>
+  <div class="meta">
+    <span>Research date: 2026-09-19</span>
+    <span>Founded: 2025</span>
+    <span>Out of stealth: 2026-09-14</span>
+    <span>Team size: 11–50</span>
+  </div>
+
+  <div class="srcline">
+    <b>Original sources (pinned)</b><br>
+    Website · <a href="https://www.rewardai.com/" target="_blank" rel="noopener">https://www.rewardai.com/</a><br>
+    Primary technical document · <a href="https://www.rewardai.com/blog/OM-1/" target="_blank" rel="noopener">OM-1: Frontier Robot Intelligence, Learned Firsthand from Humans (2026-09-14)</a><br>
+    About us (signed by the CEO) · <a href="https://www.rewardai.com/about/" target="_blank" rel="noopener">https://www.rewardai.com/about/</a><br>
+    Official demo video · <a href="https://youtu.be/IJvyS2aPsnA" target="_blank" rel="noopener">https://youtu.be/IJvyS2aPsnA</a> ｜ Official X <a href="https://x.com/RewardAI_" target="_blank" rel="noopener">@RewardAI_</a> ｜ YouTube <a href="https://www.youtube.com/@reward-ai" target="_blank" rel="noopener">@reward-ai</a>
+  </div>
+
+  <div class="legend">
+    <span class="bd bd-o">Official</span> Company website / official social media / founder-signed content
+    <span class="bd bd-c" style="margin-left:10px">Corroborating</span> Academic papers, project pages, third-party media, public records
+    <span class="bd bd-i" style="margin-left:10px">Inference</span> This report's reasoning from the above materials (not officially confirmed)
+  </div>
+</header>
+
+<!-- ============ 结论先行 ============ -->
+<h2 class="sec-summary"><span class="num">00</span>Conclusions First</h2>
+
+<div class="box k">
+  <div class="t">Five Core Judgments</div>
+  <p><b>1. Company profile.</b> Reward AI is a San Francisco Bay Area robot foundation model company founded in 2025 and out of stealth since 2026-09-14, started by two Stanford PhDs: <b>Zipeng Fu (CEO)</b> and <b>Chen Wang (CTO)</b>.<span class="bd bd-o">Official</span><span class="bd bd-c">Corroborating</span></p>
+  <p><b>2. The thesis in one sentence.</b> Move the data entry point of robot learning <b>from the robot body to the human hand</b>: use a self-built 7-DoF wearable capture device, <b>Omnibody Hand</b>, to record natural human manipulation as multimodal streams; train a cross-embodiment generalist policy, <b>OM-1</b>; then let a high-frequency control layer trained with sim RL absorb the dynamic differences between machines — the official slogan being <i>One Model, One Data Interface, Any Body</i>.<span class="bd bd-o">Official</span></p>
+  <p><b>3. It is an industrialized upgrade of the UMI → DexCap lineage.</b> UMI's core mechanism was "one handheld gripper — worn by a human to capture, mounted on a robot to run"; Reward AI swaps the gripper for "the same 7-DoF functional hand + tactile/proximity/force + electromagnetic tracking", and explicitly splits out a control layer with its own clock. The CEO is a co-author of <i>UMI on Legs</i> (CoRL 2024); the CTO is first author of <i>DexCap</i> (RSS 2024).<span class="bd bd-c">Corroborating · provenance</span></p>
+  <p><b>4. The only verifiable hard number today is capture-side tracking error</b> (mean overshoot at high speeds 24.9 mm → 9.5 mm, a 60% reduction). Task success rates, data volume, model parameter count, inference frequency, funding, customer names — <b>all undisclosed</b>.<span class="bd bd-o">Official</span><span class="bd bd-c">Corroborating</span></p>
+  <p><b>5. Commercialization hasn't really started, but the direction is written all over it.</b> No pricing, no customers, no API, no open source. The founders repeatedly stress "Efficiency is ROI" and "every clip runs at 1x speed" — explicitly benchmarking against production-line takt time and deployment returns, and stressing that the model can be "dropped onto whatever robots already stand on a customer's floor".<span class="bd bd-o">Official</span><span class="bd bd-i">Inference</span></p>
+</div>
+
+<!-- ============ 一、公司速览 ============ -->
+<h2 class="sec-source"><span class="num">01</span>Company Snapshot</h2>
+
+<div class="tw">
+<table>
+  <tr><th style="width:130px">Item</th><th>Content</th><th style="width:96px">Type</th></tr>
+  <tr><td>Company name</td><td>Reward AI (brand and X handle both written "Reward AI"; domain rewardai.com)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Founded</td><td>2025 (LinkedIn company page); the two founders completed their Stanford PhDs around 2025</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Location</td><td>San Francisco Bay Area (per third-party media; no address on the official site)</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>Size</td><td>11–50 people (LinkedIn company page); Privately Held</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Self-description</td><td>"engineers, company builders and researchers … spanning the full stack: from large foundation models to gearboxes, from hands to legs, from visual and tactile perception to high-frequency control"</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>First product</td><td>OM-1 (Omnibody Model 1), a generalist robot policy + the full Omnibody stack (Omnibody Hand / One Data Interface / Control Any Body)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Funding</td><td>Amount, round, and investors <b>all undisclosed</b>. Third-party industry newsletters explicitly note that "as of this launch, the company's website has not disclosed funding amount or investors"</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>Openness</td><td>Model weights, code, datasets, and API are <b>all closed</b>; no papers published</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>Contact</td><td>general@rewardai.com (business), careers@rewardai.com (hiring)</td><td><span class="bd bd-o">Official</span></td></tr>
+</table>
+</div>
+
+<!-- ============ 二、信息来源清单 ============ -->
+<h2 class="sec-source"><span class="num">02</span>Source Inventory</h2>
+
+<p class="lead">The research draws on <b>49 sources</b> in three categories. The table below is the category-level skeleton.</p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:110px">Category</th><th style="width:60px">Count</th><th>Representative sources</th><th>Role in this report</th></tr>
+  <tr>
+    <td><span class="bd bd-o">Official</span></td><td>15</td>
+    <td>Website homepage / About us (CEO-signed) / blog index / <b>OM-1 technical blog post</b> / official demo video / official X @RewardAI_ / official YouTube @reward-ai / LinkedIn company page / <b>Zipeng Fu's launch post</b> / both founders' personal sites and CVs</td>
+    <td>The factual baseline. Caveat: every performance claim is a "company self-report"; no third-party replication yet</td>
+  </tr>
+  <tr>
+    <td><span class="bd bd-c">Corroborating</span></td><td>31</td>
+    <td>Papers and project pages: DexCap / Mobile ALOHA / HumanPlus / DeepWBC / UMI on Legs / UMI / Sequential Dexterity / MimicPlay / SwingBot; Humanoids Daily, RuntimeWire, Digital CxO, CIVL, humanoid.guide, Tencent News · Qianzhan Robotics, NetEase, SOURCEMIND, alphaXiv, Lacuna</td>
+    <td>Technology lineage tracing + cross-validation + competitive positioning. Within media coverage, "reported facts" are kept distinct from "author commentary"</td>
+  </tr>
+  <tr>
+    <td><span class="bd bd-i">Inference</span></td><td>3</td>
+    <td>Author lookups behind the 14 images in the About page's "Selected past work by our team"; the judgment on the commercialization path of "closed source + no customers + Efficiency is ROI"</td>
+    <td>Fills gaps the company hasn't disclosed. Each item shows its reasoning chain and is kept separate from official facts</td>
+  </tr>
+</table>
+</div>
+
+<div class="box note">
+  <div class="t">A key hidden source</div>
+  <p>The About page carries a section, <b>"Selected past work by our team"</b>, rendered as a scrolling image group. Its caption text is invisible on the page, but each image's <code>alt</code> attribute is readable official text — currently the <b>only</b> official clue for inferring "who is on the team besides the two founders". Section 03's team inference rests on this.</p>
+  <p style="margin-top:8px">Likewise, the <code>aria-label</code>s of the 9 demo videos in the OM-1 post are official text; one reads verbatim: <i>"Omnibody Hands in motion, on robot arms and worn by a person at a table"</i> — official evidence that the same hand is both worn by a person and mounted on a robot.<span class="bd bd-o">Official</span></p>
+</div>
+
+<!-- ============ 三、核心成员 ============ -->
+<h2 class="sec-team"><span class="num">03</span>Core Team: Backgrounds and Signature Strengths</h2>
+
+<h3>3.1 Zipeng Fu · Co-founder &amp; CEO</h3>
+
+<div class="pc">
+  <div class="hd"><span class="n">Zipeng Fu</span><span class="r">Co-founder &amp; CEO · Stanford CS PhD · former Google DeepMind researcher</span></div>
+  <div class="bd2">
+    <dl class="kv">
+      <dt>BS</dt><dd>UCLA, Computer Science + Applied Mathematics double major (2016–2020), advised by <b>Song-Chun Zhu</b></dd>
+      <dt>MS / research</dt><dd>CMU master's in Machine Learning + graduate researcher at the Robotics Institute (2020-08–2022-06), advised by <b>Deepak Pathak</b> and <b>Jitendra Malik</b></dd>
+      <dt>PhD</dt><dd>Stanford AI Lab CS PhD (from 2022-09), advisor <b>Chelsea Finn</b>, <b>completed in 2.5 years</b>; Pierre and Christine Lamond Fellowship (top 7 in the CS department)</dd>
+      <dt>Industry</dt><dd>Google DeepMind student researcher (2023-06–2023-12, working with <b>Jie Tan</b> on foundation models for robot navigation); Vayu Robotics internship (2022-07–09)</dd>
+    </dl>
+    <p style="font-size:13px;color:var(--muted);margin-top:2px"><span class="bd bd-o">Official</span> Personal site zipengfu.github.io and CV; <span class="bd bd-c">Corroborating</span> alphaXiv records add the Vayu Robotics stint</p>
+  </div>
+</div>
+
+<h4>Work during and before the PhD: a complete chain from low-level adaptation to deployable systems</h4>
+
+<div class="tw">
+<table>
+  <tr><th style="width:210px">Representative work</th><th style="width:78px">Venue</th><th>What it did</th><th style="width:150px">Capability built</th></tr>
+  <tr>
+    <td><b>RMA: Rapid Motor Adaptation</b></td><td>RSS 2021<br>(during CMU master's)</td>
+    <td>Let quadrupeds recover locomotion on unseen terrain via online adaptation; widely covered by WSJ, Forbes, DARPA, and others</td>
+    <td>Low-level robust control + online adaptation</td>
+  </tr>
+  <tr>
+    <td><b>Deep Whole-Body Control</b></td><td>CoRL 2022<br>Oral · Best Systems Finalist</td>
+    <td>One unified policy solving manipulation and locomotion together — whole-body control of a quadruped/wheeled base + arm</td>
+    <td>Systematizing whole-body control (WBC)</td>
+  </tr>
+  <tr>
+    <td><b>Robot Parkour Learning</b></td><td>CoRL 2023<br>Oral · Best Systems Finalist</td>
+    <td>Quadruped parkour: perception-driven agile locomotion over complex terrain</td>
+    <td>Perception–control tight coupling</td>
+  </tr>
+  <tr>
+    <td><b>UMI on Legs</b></td><td>CoRL 2024</td>
+    <td>Porting manipulation policies learned with UMI (handheld gripper capture) onto mobile bases through a manipulation-centric whole-body controller</td>
+    <td><b>Direct participation in the UMI lineage</b>: understanding how capture–policy–control interlock</td>
+  </tr>
+  <tr>
+    <td><b>Mobile ALOHA</b> (co-first author)</td><td>CoRL 2024</td>
+    <td>Low-cost (~$32k) bimanual mobile manipulation system: stir-frying shrimp, opening cabinets, pressing elevator buttons, rinsing pots; fully open-sourced hardware and software; went globally viral</td>
+    <td>System-level engineering + large-scale impact</td>
+  </tr>
+  <tr>
+    <td><b>HumanPlus</b> (co-first author)</td><td>CoRL 2024<br>Best Paper Finalist (top 6)</td>
+    <td>Humanoids learn by "shadowing" human motion from an egocentric view, then imitation learning from human motion</td>
+    <td>Humanoid embodiment + human-to-robot transfer</td>
+  </tr>
+  <tr>
+    <td>Mobility VLA / Open X-Embodiment</td><td>CoRL 2024 / ICRA 2024 (Best Paper)</td>
+    <td>Navigation foundation model; cross-embodiment dataset and RT-X models (a DeepMind-led collaboration)</td>
+    <td>Foundation-model paradigm + cross-embodiment data standards</td>
+  </tr>
+</table>
+</div>
+
+<div class="box k">
+  <div class="t">Signature strength (this report's judgment)</div>
+  <p><b>His core skill is not "inventing new algorithms" but "actually deploying learned policies in the open world."</b> From RMA (controllers that don't fall apart on unseen terrain), DeepWBC (locomotion and manipulation fused into one policy), Robot Parkour (perception–control coupling pushed to the limit), to Mobile ALOHA / HumanPlus (reproducible, open-sourceable, demonstrable complete systems) — every step along this line answers the same question: <i>how to keep a learned policy from failing on real machines at real tempo.</i></p>
+  <p>This directly explains OM-1's architecture choices: <b>why the control layer is a first-class citizen</b> — an independent high-frequency clock, sim-RL training, online optimization of transitions between adjacent predictions. That is not what someone who builds VLAs would design first; it is exactly what someone who has spent four years on "deployable robot systems" would design first.<span class="bd bd-i">Inference</span> (based on the consistency between his paper sequence and OM-1's architecture)</p>
+  <p style="margin-top:6px">A secondary but key point: <b>he is a co-author of UMI on Legs</b>, with first-hand experience of UMI's route of dissolving the embodiment gap using the same handheld hardware. That explains why Reward AI dares to make "the same Omnibody Hand worn by humans and mounted on robots" its cross-embodiment mechanism.<span class="bd bd-c">Corroborating</span></p>
+</div>
+
+<h3>3.2 Chen Wang · Co-founder &amp; CTO</h3>
+
+<div class="pc">
+  <div class="hd"><span class="n">Chen Wang</span><span class="r">Co-founder &amp; CTO · Stanford CS PhD · advised by Fei-Fei Li and C. Karen Liu</span></div>
+  <div class="bd2">
+    <dl class="kv">
+      <dt>BS</dt><dd>Shanghai Jiao Tong University, Computer Science, advised by <b>Cewu Lu</b></dd>
+      <dt>PhD</dt><dd>Stanford CS PhD (from 2020, <b>graduated 2025-06</b>), advised by <b>Fei-Fei Li</b> and <b>C. Karen Liu</b></dd>
+      <dt>Research stints</dt><dd>MIT CSAIL (2019, Edward Adelson's GelSight group) → NVIDIA Research (2022, NVIDIA Graduate Fellowship Finalist) → Google DeepMind (2024)</dd>
+      <dt>Self-described focus</dt><dd>"robot learning for dexterous manipulation, imitation learning from human motion, and long-horizon planning and control"</dd>
+    </dl>
+    <p style="font-size:13px;color:var(--muted);margin-top:2px"><span class="bd bd-o">Official</span> Personal site chenwangjeremy.net</p>
+  </div>
+</div>
+
+<h4>Work during and before the PhD: a relentlessly focused human-motion → robot-motion line</h4>
+
+<div class="tw">
+<table>
+  <tr><th style="width:200px">Representative work</th><th style="width:96px">Venue</th><th>What it did</th><th style="width:150px">Capability built</th></tr>
+  <tr>
+    <td>DenseFusion / 6-PACK / force-torque dynamics</td><td>CVPR 2019<br>ICRA 2020<br>IROS 2019</td>
+    <td>6D object pose estimation (RGB-D dense fusion, category-level keypoint tracking); transferable force-torque dynamics models for peg-in-hole</td>
+    <td><b>Modeling contact and force</b> (already during undergrad)</td>
+  </tr>
+  <tr>
+    <td><b>SwingBot</b></td><td>IROS 2020<br><b>Best Paper Award</b></td>
+    <td>Learning object physical properties through in-hand tactile exploration for dynamic swinging manipulation (MIT GelSight group)</td>
+    <td><b>Tactile-driven dynamic manipulation</b></td>
+  </tr>
+  <tr>
+    <td>Co-GAIL / HAN / robomimic</td><td>CoRL 2021<br>IROS 2021</td>
+    <td>Extracting collaboration policies from human–human collaborative demonstrations; a hand-eye-coordinated action space; the robomimic large-scale imitation-learning benchmark</td>
+    <td>Imitation-learning infrastructure</td>
+  </tr>
+  <tr>
+    <td><b>MimicPlay</b> (first author)</td><td>CoRL 2023<br>Oral · three finalist nods</td>
+    <td>Extracting latent plans from videos of humans freely playing to guide low-level robot policies, sharply reducing dependence on robot teleoperation</td>
+    <td>Trading cheap human data for expensive robot data</td>
+  </tr>
+  <tr>
+    <td><b>Sequential Dexterity</b> (co-first)</td><td>CoRL 2023</td>
+    <td>"Chaining" multiple multi-finger policies for long-horizon manipulation; switching functional modes without regrasping</td>
+    <td>Multi-finger dexterity + long-horizon composition</td>
+  </tr>
+  <tr>
+    <td>VoxPoser / ReKep / TRANSIC / Obj-Dex</td><td>CoRL 2023–2024</td>
+    <td>LLM-synthesized 3D value maps; relational keypoint constraints for spatio-temporal reasoning; sim2real online correction; object-centric dexterous manipulation from human motion data</td>
+    <td>High-level planning + on-robot correction</td>
+  </tr>
+  <tr>
+    <td><b>DexCap</b> (first author)</td><td><b>RSS 2024</b></td>
+    <td><b>Portable hand mocap system</b>: chest camera rig (RGB-D LiDAR + 3 SLAM cameras) + electromagnetic-field mocap gloves + backpack compute/power (~40 min); capture human dexterous manipulation → fingertip-IK retargeting onto the LEAP hand → point-cloud Diffusion Policy</td>
+    <td><b>The direct predecessor of Omnibody Hand</b></td>
+  </tr>
+</table>
+</div>
+
+<div class="box k">
+  <div class="t">Signature strength (this report's judgment)</div>
+  <p><b>His entire PhD did one thing: lowering the conversion cost from human demonstration to robot execution.</b> Co-GAIL (learning from human–human demos) → MimicPlay (latent plans from videos of humans playing) → Sequential Dexterity (chaining multi-finger policies) → DexCap (portable hardware capturing human hands directly) → Obj-Dex (object-centric dexterous manipulation trained directly on human motion data). No step along this line was incidental; every step thinned the same bottleneck.</p>
+  <p>The second strength is <b>completeness on the sensing side</b>: he did purely tactile-driven manipulation at MIT's GelSight group (SwingBot, IROS 2020 best paper) and force-torque dynamics modeling as an undergrad. The multimodal combination on Omnibody Hand — tactile + inter-finger proximity + force + in-hand camera — is essentially his technical résumé turned into hardware.<span class="bd bd-i">Inference</span></p>
+  <p style="margin-top:6px">Phrase evidence: the official blog explicitly writes <i>"Building on our prior work <b>DexCap</b> …"</i>; the founder's launch post likewise says <i>"We build on our prior work DexCap at Stanford."</i><span class="bd bd-o">Official</span></p>
+</div>
+
+<h3>3.3 Team beyond the founders: inference from the official past-work gallery</h3>
+
+<p class="lead">The official site has no team page; the LinkedIn company page shows only one named member, Zipeng Fu, plus five anonymous avatars. The About page's "Selected past work by our team" — 14 images — is the only official clue. Cross-checking each image's <code>alt</code> text against the papers/projects yields the table below. <b>Except for rows marked Official/Corroborating, all person identifications are inference.</b></p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:190px">Gallery image (official alt summary)</th><th style="width:190px">Corresponding work</th><th>Known authors</th><th style="width:96px">Type</th></tr>
+  <tr><td>Bimanual robot stir-frying shrimp at a stove</td><td>Mobile ALOHA (CoRL 2024)</td><td>Zipeng Fu (co-first)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Humanoid folding a hoodie / tying shoelaces</td><td>HumanPlus (CoRL 2024)</td><td>Zipeng Fu (co-first)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Two dexterous hands cutting tape with scissors</td><td><b>DexCap</b> (RSS 2024)</td><td><b>Chen Wang</b> (first author)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Robot hand assembling building blocks</td><td>Sequential Dexterity (CoRL 2023)</td><td>Chen Wang (co-first)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Arm operating an espresso machine</td><td>VIOLA (CoRL 2022)</td><td>Yifeng Zhu et al. (UT Austin)</td><td><span class="bd bd-i">Inference</span></td></tr>
+  <tr><td>Gripper fitted with domed optical tactile fingertips</td><td>DenseTact (ICRA 2022)</td><td>Won Kyung Do, Monroe Kennedy III (Stanford ARMLab)</td><td><span class="bd bd-i">Inference</span></td></tr>
+  <tr><td>Quadruped + arm crouching on grass</td><td>Deep Whole-Body Control (CoRL 2022)</td><td>Zipeng Fu (co-first)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Small humanoid climbing wooden stairs</td><td><b>ToddlerBot</b> (arXiv 2502.00893)</td><td>Haochen Shi, Weizhuo Wang (<b>both also DexCap co-authors</b>)</td><td><span class="bd bd-i">Inference</span> (high confidence)</td></tr>
+  <tr><td>Science Robotics cover: quadruped crossing a fallen log</td><td>Representative legged-locomotion work</td><td>Most likely Robot Parkour Learning (Zipeng Fu co-first)</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>Mobile manipulator picking an apple off a table</td><td>GDM / Meta robotics work</td><td>A member with big-tech robotics research background</td><td><span class="bd bd-i">Inference</span></td></tr>
+  <tr><td>Falcon 9 dual-booster synchronized landing</td><td>Aerospace engineering background</td><td>Hardware/engineering member likely with SpaceX experience</td><td><span class="bd bd-i">Inference</span></td></tr>
+  <tr><td>Cutaway of a 3D-printed cycloidal gear reducer</td><td>In-house drivetrain</td><td>Mechanical/hardware engineering member</td><td><span class="bd bd-i">Inference</span></td></tr>
+</table>
+</div>
+
+<div class="box note">
+  <div class="t">Official self-description of capability coverage (cross-checks the table above)</div>
+  <p>From the About page: <i>"We are engineers, builders and researchers who pioneered robot learning in dexterous manipulation, mobile manipulation, and legged locomotion, spanning the full stack: <b>from large foundation models to gearboxes, from hands to legs, from visual and tactile perception to high-frequency control</b>."</i><span class="bd bd-o">Official</span></p>
+  <p style="margin-top:6px">That is, the company claims simultaneous coverage of: foundation models — gearboxes (hardware drivetrain) — hands (dexterous manipulation) — legs (legged locomotion) — visual and tactile perception — high-frequency control. This mutually corroborates the VIOLA / DenseTact / ToddlerBot / cycloidal reducer / Falcon 9 identifications above.<span class="bd bd-i">Inference</span></p>
+</div>
+
+<!-- ============ 四、技术路线 ============ -->
+<h2 class="sec-tech"><span class="num">04</span>Technology: The Integrated Hardware–Software Omnibody Stack</h2>
+
+<h3>4.1 The architecture at a glance</h3>
+
+<figure>
+<div class="figbox">
+<svg viewBox="0 0 860 300" role="img" aria-label="Omnibody four-layer architecture: capture, data interface, model, control layer, ultimately running on any robot body">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L0,6.4 L7.5,3.2 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <!-- layer boxes -->
+  <g font-family="-apple-system,PingFang SC,sans-serif">
+    <!-- L1 -->
+    <rect x="16" y="24" width="180" height="96" rx="10" fill="#ffffff" stroke="#0d9488" stroke-width="1.6"/>
+    <text x="106" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#0d9488">① Omnibody Hand</text>
+    <text x="106" y="70" text-anchor="middle" font-size="11.5" fill="#3d4551">7-DoF wearable functional hand</text>
+    <text x="106" y="88" text-anchor="middle" font-size="11.5" fill="#3d4551">tactile · proximity · force · camera</text>
+    <text x="106" y="106" text-anchor="middle" font-size="11.5" fill="#3d4551">visual-inertial + EM tracking</text>
+    <!-- L2 -->
+    <rect x="228" y="24" width="180" height="96" rx="10" fill="#ffffff" stroke="#0d9488" stroke-width="1.6"/>
+    <text x="318" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#0d9488">② One Data Interface</text>
+    <text x="318" y="70" text-anchor="middle" font-size="11.5" fill="#3d4551">unified packaging of multimodal streams</text>
+    <text x="318" y="88" text-anchor="middle" font-size="11.5" fill="#3d4551">each modality at its native rate</text>
+    <text x="318" y="106" text-anchor="middle" font-size="11.5" fill="#3d4551">no staged scenes / no supervision</text>
+    <!-- L3 -->
+    <rect x="440" y="24" width="180" height="96" rx="10" fill="#ffffff" stroke="#0d9488" stroke-width="1.6"/>
+    <text x="530" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#0d9488">③ OM-1 (One Model)</text>
+    <text x="530" y="70" text-anchor="middle" font-size="11.5" fill="#3d4551">purely human data · single-stage training</text>
+    <text x="530" y="88" text-anchor="middle" font-size="11.5" fill="#3d4551">in: image / tactile / proximity / pose</text>
+    <text x="530" y="106" text-anchor="middle" font-size="11.5" fill="#3d4551">out: direction / speed / force / event timing</text>
+    <!-- L4 -->
+    <rect x="652" y="24" width="192" height="96" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.6"/>
+    <text x="748" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#ea580c">④ Control Any Body</text>
+    <text x="748" y="70" text-anchor="middle" font-size="11.5" fill="#3d4551">high-frequency control layer trained with sim RL</text>
+    <text x="748" y="88" text-anchor="middle" font-size="11.5" fill="#3d4551">absorbs dynamics / disturbances / latency</text>
+    <text x="748" y="106" text-anchor="middle" font-size="11.5" fill="#3d4551">independent clock + online transition optimization</text>
+
+    <!-- arrows -->
+    <g stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ar)">
+      <line x1="196" y1="72" x2="226" y2="72"/>
+      <line x1="408" y1="72" x2="438" y2="72"/>
+      <line x1="620" y1="72" x2="650" y2="72"/>
+      <line x1="748" y1="120" x2="748" y2="152"/>
+    </g>
+
+    <!-- bodies -->
+    <text x="430" y="176" text-anchor="middle" font-size="12" font-weight="700" fill="#6b7480">One policy → any body (no per-body fine-tuning)</text>
+    <g stroke="#c9cfd8" stroke-width="1.4" fill="#ffffff">
+      <rect x="80" y="200" width="150" height="66" rx="9"/>
+      <rect x="255" y="200" width="150" height="66" rx="9"/>
+      <rect x="430" y="200" width="150" height="66" rx="9"/>
+      <rect x="605" y="200" width="150" height="66" rx="9"/>
+    </g>
+    <g font-size="12.5" fill="#3d4551" text-anchor="middle">
+      <text x="155" y="228">Table-top arms</text><text x="155" y="248" font-size="11" fill="#6b7480">table-top arms</text>
+      <text x="330" y="228">Industrial arms</text><text x="330" y="248" font-size="11" fill="#6b7480">industrial arms</text>
+      <text x="505" y="228">Humanoids</text><text x="505" y="248" font-size="11" fill="#6b7480">humanoids (incl. whole-body ops & navigation)</text>
+      <text x="680" y="228">Mobile manipulators</text><text x="680" y="248" font-size="11" fill="#6b7480">mobile manipulators</text>
+    </g>
+
+    <!-- feedback loop -->
+    <path d="M230 288 L230 272 Q230 262 240 262 L636 262 Q646 262 646 272 L646 288" fill="none" stroke="#c9cfd8" stroke-width="1.3" stroke-dasharray="4 4"/>
+    <text x="438" y="256" text-anchor="middle" font-size="11" fill="#8b95a3">Data keeps being reused across hardware · "today's captures will train bodies not yet designed"</text>
+  </g>
+</svg>
+</div>
+<figcaption>Fig. 1: The four layers of the Omnibody stack. Separating layers ①②③ from layer ④ is the core of the whole design — "intelligence" and "body" are explicitly split. Source: Reward AI's official OM-1 blog post <span class="bd bd-o">Official</span> (figure labels are condensed from the official original).</figcaption>
+</figure>
+
+<h3>4.2 Data capture: Omnibody Hand</h3>
+
+<h4>Hardware trade-offs: functional dexterity ≠ joint-by-joint human mimicry</h4>
+<p>The company explicitly rejects two paths: the "fragile 20+ DoF joint-by-joint replica of the human hand", and the "parallel-jaw gripper". Omnibody Hand takes the middle: a compact <b>7-DoF</b> design that keeps only the functions that truly matter for manipulation.</p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:150px">Design element</th><th>Official wording</th></tr>
+  <tr><td>Fine pinch</td><td>Captures thumb–index pinches while recording both thumb and index flexion, so the thumb can work with the index as well as with the remaining fingers</td></tr>
+  <tr><td>Power grasp</td><td>Middle, ring, and pinky fingers are coupled at the MCP joints, working with thumb flexion to wrap around objects</td></tr>
+  <tr><td>In-hand reorientation</td><td>Adjusting an object's pose inside the hand (in-hand reorientation) is listed as one of the three design priorities</td></tr>
+  <tr><td>Ergonomic invariance</td><td>An integrated distal flexion mechanism absorbs finger-length differences, lowering sensitivity to joint alignment and <b>eliminating per-user linkage adjustment</b>. Official rationale: discomfort makes people change their grasp style, and "a compensated grasp is no longer the behavior we want to record"</td></tr>
+  <tr><td>Sensing channels</td><td>Global-shutter in-hand camera (images), high-frequency tactile, inter-finger proximity sensing, force, hand pose trajectory</td></tr>
+  <tr><td>Tracking scheme</td><td>Visual-inertial augmented with <b>electromagnetic (EM) sensing</b>, plus algorithms compensating for environmental EM disturbance</td></tr>
+</table>
+</div>
+
+<h4>The only public quantitative benchmark</h4>
+<figure>
+<div class="figbox">
+<svg viewBox="0 0 860 210" role="img" aria-label="Tracking overshoot error comparison: electromagnetic vs visual-inertial schemes across 8 speed bins">
+  <g font-family="-apple-system,PingFang SC,sans-serif">
+    <text x="16" y="20" font-size="12.5" font-weight="700" fill="#171a1f">Mean overshoot error vs. motion speed (company self-test, 8 speed bins × 10 trials each)</text>
+    <!-- axis -->
+    <line x1="70" y1="170" x2="800" y2="170" stroke="#c9cfd8" stroke-width="1.2"/>
+    <line x1="70" y1="40" x2="70" y2="170" stroke="#c9cfd8" stroke-width="1.2"/>
+    <g font-size="10.5" fill="#8b95a3" text-anchor="end">
+      <text x="62" y="44">30</text><text x="62" y="76">20</text><text x="62" y="108">10</text><text x="62" y="140">5</text><text x="62" y="174">0</text>
+    </g>
+    <g stroke="#eef0f4" stroke-width="1">
+      <line x1="70" y1="140" x2="800" y2="140"/><line x1="70" y1="108" x2="800" y2="108"/>
+      <line x1="70" y1="76" x2="800" y2="76"/><line x1="70" y1="44" x2="800" y2="44"/>
+    </g>
+    <!-- bars: 8 speeds -->
+    <!-- scale: 30mm -> 130px height => 4.333 px/mm ; speed 0..70 cm/s mapped to x 70..800 -->
+    <g>
+      <!-- visual-inertial (orange) -->
+      <rect x="96"  y="161" width="26" height="9"   fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="188" y="157" width="26" height="13"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="280" y="150" width="26" height="20"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="372" y="141" width="26" height="29"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="464" y="128" width="26" height="42"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="556" y="114" width="26" height="56"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="648" y="100" width="26" height="70"  fill="#fed7aa" stroke="#ea580c"/>
+      <rect x="740" y="62"  width="26" height="108" fill="#fed7aa" stroke="#ea580c"/>
+      <!-- ours EM (teal) -->
+      <rect x="126" y="168" width="26" height="2"   fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="218" y="167" width="26" height="3"   fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="310" y="165" width="26" height="5"   fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="402" y="161" width="26" height="9"   fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="494" y="155" width="26" height="15"  fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="586" y="146" width="26" height="24"  fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="678" y="133" width="26" height="37"  fill="#ccfbf1" stroke="#0d9488"/>
+      <rect x="770" y="129" width="26" height="41"  fill="#ccfbf1" stroke="#0d9488"/>
+    </g>
+    <!-- annotations -->
+    <g font-size="10.5" fill="#8b95a3" text-anchor="middle">
+      <text x="124" y="184">3</text><text x="216" y="184">12</text><text x="308" y="184">21</text><text x="400" y="184">30</text>
+      <text x="492" y="184">39</text><text x="584" y="184">48</text><text x="676" y="184">58</text><text x="768" y="184">67</text>
+      <text x="440" y="202" font-size="11">Mean speed (cm/s)</text>
+    </g>
+    <g font-size="11.5" font-weight="700">
+      <text x="753" y="52" fill="#ea580c" text-anchor="middle">24.9 mm　visual-inertial</text>
+      <text x="783" y="121" fill="#0d9488" text-anchor="middle">9.5 mm　Ours (EM)</text>
+    </g>
+    <g>
+      <rect x="600" y="28" width="12" height="10" fill="#fed7aa" stroke="#ea580c"/>
+      <text x="618" y="37" font-size="11.5" fill="#3d4551">Visual-inertial</text>
+      <rect x="710" y="28" width="12" height="10" fill="#ccfbf1" stroke="#0d9488"/>
+      <text x="728" y="37" font-size="11.5" fill="#3d4551">Ours (electromagnetic)</text>
+    </g>
+    <text x="16" y="108" font-size="11" fill="#6b7480">Mean overshoot</text>
+    <text x="16" y="122" font-size="11" fill="#6b7480">error (mm)</text>
+  </g>
+</svg>
+</div>
+<figcaption>Fig. 2: Redrawn from the official blog chart. Test design: two trackers rigidly mounted on the same structure, moving back and forth between two mechanical stops a known distance apart; travel beyond the fixed span is the overshoot. <b>Note: this is capture-side (hand-tracking) error, not robot task success rate.</b><span class="bd bd-o">Official</span></figcaption>
+</figure>
+
+<h4>Positioning in the UMI lineage: the section you've been waiting for</h4>
+<p>Reward AI never says "UMI" in its official materials, but from hardware to action representation to latency handling, Omnibody Hand is an iteration of the same design paradigm. The table below puts the three generations side by side.</p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:112px">Dimension</th><th>UMI (RSS 2024)</th><th>DexCap (RSS 2024)</th><th><b>Omnibody Hand (2026)</b></th></tr>
+  <tr><td>Form factor</td><td>3D-printed handheld parallel-jaw gripper + GoPro</td><td>Chest camera rig (RGB-D LiDAR + 3 SLAM cameras) + EM mocap gloves + backpack power</td><td><b>7-DoF wearable functional hand</b> (integrated)</td></tr>
+  <tr><td>End-effector DoF</td><td>2-DoF gripper (opening width only)</td><td>Finger 3D positions (relative to palm, EMF-measured)</td><td><b>7 DoF</b>: independent thumb/index flexion + coupled MCP joints of middle/ring/pinky</td></tr>
+  <tr><td>Tracking</td><td>GoPro + IMU-aware SLAM (modified ORB-SLAM3)</td><td>SLAM cameras + electromagnetic field</td><td><b>Visual-inertial + EM</b> + compensation for environmental EM disturbance</td></tr>
+  <tr><td>Vision</td><td>155° fisheye + side mirrors for "implicit stereo"</td><td>Chest-mounted RGB-D</td><td><b>Global-shutter in-hand camera</b> (keeps visual context during fast motion)</td></tr>
+  <tr><td>Contact / force</td><td>None (gripper-width proprioception only)</td><td>None (position only)</td><td><b>Tactile + inter-finger proximity + force</b></td></tr>
+  <tr><td>Action representation</td><td>Relative trajectories (relative to the current gripper pose)</td><td>Fingertip IK → 16-D joint positions of the LEAP hand</td><td><b>Motion direction / speed / force / event timing</b> (embodiment-agnostic)</td></tr>
+  <tr><td>Cross-embodiment mechanism</td><td>Requires "parallel-jaw stroke &gt; 85 mm"; calibration-free</td><td>Fingertip-IK retargeting per target hand; FK-generated robot-hand point clouds added to observations to bridge the visual gap</td><td><b>No data-level retargeting</b>; left to the sim-RL control layer to absorb</td></tr>
+  <tr><td>Capture efficiency</td><td>~3× teleoperation</td><td>~3× teleoperation, near natural human speed</td><td>Undisclosed (but at natural human tempo, no slowdown required)</td></tr>
+  <tr><td>Signature demo</td><td>Dynamic tossing 87.5%, dish washing 70%, in-the-wild generalization 71.7%</td><td>New tasks from 30 min of human mocap, no teleoperation</td><td>Long-horizon new tasks with challenging dynamics learned in &lt;30 min</td></tr>
+</table>
+</div>
+
+<div class="box note">
+  <div class="t">What Omnibody Hand inherits from UMI — and what it changes</div>
+  <p><b>Inherited (5 items):</b></p>
+  <ol style="margin:6px 0">
+    <li><b>The same hardware — worn by a human to capture, mounted on a robot to run.</b> This one has direct official evidence — the OM-1 post's video <code>aria-label</code> reads: <i>"Omnibody Hands in motion, <b>on robot arms and worn by a person</b> at a table"</i>, plus "An Omnibody Hand <b>on a robot arm</b> unscrewing a braided hose fitting" and "Two robot arms <b>with Omnibody Hands</b> gripping either side of a cable connector".<span class="bd bd-o">Official</span></li>
+    <li>Portable, in-the-wild, capture without robots.</li>
+    <li>A hand/wrist camera as the observation center (UMI: wrist-mounted GoPro; Omnibody: in-hand global-shutter camera).</li>
+    <li>An embodiment-agnostic "relative / functional" action representation.</li>
+    <li>Explicit latency handling (UMI: inference-time latency matching; Reward: upgraded to an independent-clock control layer).</li>
+  </ol>
+  <p style="margin-top:8px"><b>Changed (4 items — also Reward's claimed differentiators):</b></p>
+  <ol style="margin:6px 0">
+    <li><b>Parallel gripper → 7-DoF functional hand.</b> The company pointedly describes the weakness of gripper-style schemes: "parallel-jaw grippers can solve many tasks, but usually by <b>constraining approach direction, contact location, and manipulation strategy</b>". Humanoids Daily echoes: 2-DoF grippers "artificially limit approach angles and contact points".<span class="bd bd-o">Official</span><span class="bd bd-c">Corroborating</span></li>
+    <li><b>Pure-visual SLAM → visual-inertial + EM.</b> Rationale: visual update rates limit the ability to follow fast reversals, and the usual fixes — post-hoc trajectory smoothing or asking people to slow down — both break the goal of capturing fast reaches and fine corrections.<span class="bd bd-o">Official</span></li>
+    <li><b>Adding tactile / proximity / force.</b> Filling in the layer of physical information pure vision cannot infer: contact, force, timing.</li>
+    <li><b>Latency handling upgraded from "alignment" to "decoupling".</b> UMI matches observation–action latency at inference; Reward runs the control layer on its own high-frequency clock and optimizes transitions between adjacent predictions online, so jitter in inference latency never interrupts motion.</li>
+  </ol>
+  <p style="margin-top:8px"><b>Provenance:</b> Zipeng Fu is a co-author of <i>UMI on Legs</i> (CoRL 2024) and Chen Wang is first author of <i>DexCap</i> — the two founders stand on the UMI branch and the DexCap branch respectively; Omnibody Hand is where the two lines merge.<span class="bd bd-c">Corroborating · provenance</span></p>
+</div>
+
+<h3>4.3 Data labeling: officially, "no labeling needed at all"</h3>
+
+<p>This is OM-1's sharpest departure from the mainstream — worth unpacking.</p>
+
+<div class="tw">
+<table>
+  <tr><th style="width:130px">Labeling step</th><th>Conventional approach</th><th>OM-1's approach</th><th style="width:84px">Type</th></tr>
+  <tr>
+    <td>Action labels</td>
+    <td>Teleoperated capture → record robot joint/end-effector state → must be aligned to each body's action space</td>
+    <td>Labels are <b>sensor-endogenous</b>: pose trajectories (tracking), contact and proximity (tactile/proximity sensing), force (force sensing), event timing (grasp/release, judged from contact + force signals)</td>
+    <td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td>Action retargeting</td>
+    <td>DexCap needs fingertip IK to map human hands onto the LEAP hand; UMI filters by each body's gripper stroke</td>
+    <td>The company claims <b>no data-level retargeting</b>: OM-1 generates robot actions directly from human motion, leaving body differences to the control layer</td>
+    <td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td>Visual domain adaptation</td>
+    <td>DexCap overlays FK-generated robot-hand point clouds into observations to bridge the human–robot visual gap</td>
+    <td>No similar mechanism disclosed (presumably bypassed by "the same Omnibody Hand is also mounted on the robot")</td>
+    <td><span class="bd bd-i">Inference</span></td>
+  </tr>
+  <tr>
+    <td>Data bucketing</td>
+    <td>Pre-training / post-training stages, each potentially requiring different labels and filtering</td>
+    <td><b>No boundary</b>: all demonstrations enter through the same interface in the same format — "the first demo and the latest demo train the same policy"</td>
+    <td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td>Scene organization</td>
+    <td>Staged lab scenes, supervised capture</td>
+    <td>Official: no staged setup, no supervision — "work, play, cook, or just live your day" all produce data</td>
+    <td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td>Quality correction</td>
+    <td>DexCap offers human-in-the-loop correction (residual correction, etc.)</td>
+    <td>Not mentioned; replaced by emergent retry/compensate/stop behaviors</td>
+    <td><span class="bd bd-c">Corroborating</span></td>
+  </tr>
+</table>
+</div>
+
+<div class="box warn">
+  <div class="t">Where did the labeling cost go? (this report's inference)</div>
+  <p>Officially, labeling is described as zero-cost. In engineering terms it has more likely been <b>moved to two other places</b> — and neither is disclosed:<span class="bd bd-i">Inference</span></p>
+  <ol style="margin:6px 0">
+    <li><b>On the capture-device side</b>: spatio-temporal calibration across sensors, consistency across wearers, compensation for environmental EM disturbance — the hidden costs of One Data Interface, and the reason Omnibody Hand had to be built in-house.</li>
+    <li><b>On the control-layer side</b>: to "drop zero-shot onto any body", each target body needs a good-enough dynamics model and domain randomization, plus an RL controller trained in simulation. <b>Every new body still costs engineering</b> — the work has merely changed from "re-capture data + re-train the policy" to "train a control layer".</li>
+  </ol>
+  <p style="margin-top:6px">In other words: Reward moved cost from "<b>data-side, growing linearly with tasks</b>" to "<b>hardware-side, a one-time investment</b> + <b>control-side, growing with the number of body types</b>". Whether that trade pays off depends on how many bodies they can cover — precisely where no numbers are visible today.</p>
+</div>
+
+<h3>4.4 The OM-1 model and the control layer</h3>
+
+<div class="tw">
+<table>
+  <tr><th style="width:120px">Module</th><th>Public technical points</th><th style="width:84px">Type</th></tr>
+  <tr><td>Input modalities</td><td>Images (scene context), tactile signals (contact and slip), inter-finger proximity (pre-contact state), hand pose trajectory; and it consumes the <b>temporal history</b> of these streams</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Sampling-rate handling</td><td><b>Each sensor is processed at its native sampling rate</b>, not downsampled to the camera frame rate — preserving high-frequency tactile and motion cues</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Action outputs</td><td>Motion direction, speed, force, and the timing of key events (grasp/move)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Training paradigm</td><td>Single stage; no pre-training/post-training split; scaling by "adding human data" rather than "designing a new training phase per robot"</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Architecture</td><td>"A new architecture tailored for efficient inference" (no details disclosed: parameter count, backbone, whether Transformer/Diffusion — all unstated)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Control layer</td><td>RL trained in simulation; handles velocity/acceleration-dependent dynamics, external disturbances, system latency; <b>independent high-frequency clock</b>; optimizes transitions between adjacent predictions online</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Coverage</td><td>Beyond table-top manipulation: whole-body work (bracing, leaning, stepping into tasks) and navigation for mobile robots</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Efficiency claims</td><td>New tasks learned from &lt;30 min of human demonstration data (incl. challenging dynamics, long-horizon); long-horizon task execution in &lt;30 s (1× speed)</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Emergent behaviors</td><td>When one arm errs the other compensates automatically; knows when to retry; adapts to adversarial perturbations; stops proactively when the environment changes too much</td><td><span class="bd bd-o">Official</span></td></tr>
+</table>
+</div>
+
+<h3>4.5 Public milestones: the demo list</h3>
+
+<p class="lead">As of 2026-09-19, the company has published <b>9 demo videos</b> (embedded in the OM-1 post, 720p/60fps, all watermarked top-left with the official "Fully autonomous, 1x speed") plus one launch compilation. Task names below come directly from official <code>aria-label</code>s and video filenames. Each task carries a <b>GIF preview</b> (transcoded from the official mp4).</p>
+
+<div class="box" style="margin-top:14px">
+  <div class="t">Metadata of these videos (new verification in this report)</div>
+  <p style="margin:4px 0">Reading the 9 official mp4 files directly yields their <b>true durations</b>: shortest 9.9 s (cross-embodiment), longest <b>158.6 s</b> (iphone-long). laundry's original is 16.5 s, matching the official copy of "about 17 seconds" — which suggests <b>video length ≈ single-task duration</b>. From this follows an observation the company has not stated: the official line is "long-horizon tasks execute in &lt;30 s (1× speed)", yet <b>ethernet-unplug (107.8 s) and iphone-long (158.6 s) far exceed 30 s</b> — both must contain multiple retries or consecutive multi-cycle runs rather than a single task.<span class="bd bd-i">Inference</span></p>
+</div>
+
+<div class="mlgrid">
+
+  <div class="ml hl">
+    <div class="shot"><span class="n1x">Flagship demo</span><span class="lbl">original 9.9s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/cross-embodiment.gif" alt="cross-embodiment demo: humanoid and industrial arms sorting under one policy" loading="eager"></div>
+    <div class="in">
+      <div class="nm">cross-embodiment <span class="sid">cross-embodiment sorting</span></div>
+      <p class="ds">A humanoid and a pair of industrial arms, <b>both wearing Omnibody Hands</b>, sort items off a conveyor into bins under the same policy.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>one policy across bodies</b></span><span class="cap">Official section · Omnibody Hand</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">original 14.9s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/omnibody-hands.gif" alt="Omnibody Hand hardware close-up: mounted and worn" loading="eager"></div>
+    <div class="in">
+      <div class="nm">omnibody-hands <span class="sid">hardware close-up</span></div>
+      <p class="ds">Omnibody Hand in motion — <b>the same hand mounted on a robot arm and worn by a demonstrator</b>. The most direct visual evidence of the "wear it to capture, mount it to execute" isomorphism.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>hardware isomorphism of capture and execution</b></span><span class="cap">Official section · Omnibody Hand</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">original 26.0s · GIF excerpt</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/sorting-2.gif" alt="conveyor sorting and tossing demo" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">sorting-2 <span class="sid">conveyor sorting</span></div>
+      <p class="ds">Two arms pick objects off a moving conveyor and <b>toss</b> them into bins.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>dynamic targets + high tempo</b></span><span class="cap">Official section · Conclusion</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">original 16.5s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/unscrew.gif" alt="bimanual unscrewing of a braided hose fitting" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">unscrew <span class="sid">unscrewing a hose fitting</span></div>
+      <p class="ds">An Omnibody Hand mounted on an arm unscrews a braided hose fitting above a conveyor while <b>the other arm steadies the assembly</b>.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>bimanual role split + screwing</b></span><span class="cap">Official section · Functional dexterity</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">original 107.8s · GIF excerpt</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/ethernet-unplug.gif" alt="unlatching and unplugging an Ethernet connector" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">ethernet-unplug <span class="sid">unplugging an Ethernet connector</span></div>
+      <p class="ds">Two arms grasp both sides of a connector with Omnibody Hands and pull it apart; <b>the latch must be pressed with extreme precision to release</b>. Named "deceptively hard" by the founder.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>fine contact + force control</b></span><span class="cap">Official section · Native multimodal sampling</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">original 13.6s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/pick-and-toss.gif" alt="humanoid picking an item and tossing it" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">pick-and-toss <span class="sid">pick and toss</span></div>
+      <p class="ds">A humanoid picks an item off a rack and <b>tosses</b> it aside.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>humanoids + dynamic tossing</b></span><span class="cap">Official section · Conclusion</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">original 158.6s · GIF excerpt</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/iphone-long.gif" alt="four-arm cooperative phone packaging, long-horizon task" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">iphone-long <span class="sid">long-horizon phone packaging</span></div>
+      <p class="ds">A long-horizon phone-packaging task; the launch video shows <b>four-arm cooperation (quadmanual)</b>. The longest of the 9 demos.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>long-horizon + multi-robot cooperation</b></span><span class="cap">Official section · Native multimodal sampling</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">original 16.5s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/laundry.gif" alt="bimanual folding of a bed sheet" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">laundry <span class="sid">folding a bed sheet</span></div>
+      <p class="ds">Two arms fold a bed sheet at a laundromat. <b>The original's 16.5 s matches the official copy of "about 17 seconds"</b> — the only demo whose duration can be cross-checked.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>deformables + long-horizon</b></span><span class="cap">Official section · Conclusion</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml">
+    <div class="shot"><span class="lbl">original 10.5s</span>
+      <img src="/assets/posts/2026-09-19-reward-ai-deep-dive/fridge.gif" alt="humanoid opening a fridge door to grab a drink" loading="lazy"></div>
+    <div class="in">
+      <div class="nm">fridge <span class="sid">opening a fridge</span></div>
+      <p class="ds">A humanoid opens <b>a fully closed stainless-steel fridge door</b> and reaches in for a drink.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>unknown load + disturbance rejection</b></span><span class="cap">Official section · Independent-clock control</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+  <div class="ml" style="justify-content:center">
+    <div class="in">
+      <div class="nm">See also · bartending <span class="sid">in the launch compilation</span></div>
+      <p class="ds">Pouring, adding ice, shaking the tin, pulling the cork, pouring into the glass — in one go. The clip appears in the official launch video; the blog post <b>provides no standalone mp4</b>, hence no GIF.</p>
+      <div class="ft"><span class="cap">Demonstrates · <b>long-horizon multi-step</b></span><span class="cap">Official section · Launch video</span><span class="bd bd-o">Official</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="box">
+  <div class="t">How the GIFs were made (reproducible; read with care)</div>
+  <ul style="margin:6px 0">
+    <li><b>Source</b>: all taken from the official mp4 direct links in the blog post (<code>/blog/OM-1/videos/*-720-h264-labeled.mp4</code>), with no cropping or speed changes.</li>
+    <li><b>Transcode</b>: ffmpeg downsampled to 320 px width, 96 colors, 4.5–7 fps. The GIFs are therefore choppier than the originals — <b>this is not the official frame rate</b>; the originals are 60 fps.</li>
+    <li><b>Excerpts</b>: <code>sorting-2</code>, <code>ethernet-unplug</code>, and <code>iphone-long</code> have long originals (26 s / 107.8 s / 158.6 s), so their GIFs are <b>uniformly sampled multi-segment splices</b>, not continuous playback. The other 6 are full-length.</li>
+    <li><b>Fidelity</b>: the GIFs retain the originals' watermark and "labeled" overlay — first-hand evidence for the official "1× speed" claim.</li>
+    <li><b>Size</b>: the 9 GIFs total about <b>12 MB</b>, 0.7–1.8 MB each, all lazy-loaded; every file is &lt; 2 MB — small enough for WeChat official-account GIFs (10 MB cap).</li>
+    <li><b>Original mp4s and official video</b>: all 9 mp4s retained locally; the full launch compilation is on the <a href="https://youtu.be/IJvyS2aPsnA" target="_blank" rel="noopener">official YouTube video</a>.</li>
+  </ul>
+</div>
+
+<h3>4.6 Timeline</h3>
+
+<div class="tl">
+  <div class="it"><div class="d">2019–2020</div><div class="h">Tactile and pose-estimation foundations</div><div class="b">Chen Wang at MIT CSAIL (GelSight group) does SwingBot (IROS 2020 best paper); DenseFusion (CVPR 2019), 6-PACK (ICRA 2020).<span class="bd bd-c">Corroborating</span></div></div>
+  <div class="it"><div class="d">2021–2022</div><div class="h">Legged adaptation + whole-body control</div><div class="b">RMA (RSS 2021), Deep Whole-Body Control (CoRL 2022, Oral / Best Systems Finalist). Zipeng Fu: CMU → Stanford.<span class="bd bd-c">Corroborating</span></div></div>
+  <div class="it"><div class="d">2023</div><div class="h">Cross-embodiment and human-data lines in parallel</div><div class="b">Robot Parkour Learning (CoRL 2023); MimicPlay / Sequential Dexterity / VoxPoser (CoRL 2023); Open X-Embodiment (ICRA 2024).<span class="bd bd-c">Corroborating</span></div></div>
+  <div class="it"><div class="d">2024-03 / 2024-06</div><div class="h">DexCap arrives (the technical origin of OM-1)</div><div class="b">arXiv preprint → RSS 2024. Portable mocap of human dexterous manipulation, ~3× teleoperation throughput, new tasks from 30 min of human data.<span class="bd bd-o">Officially cited</span><span class="bd bd-c">Corroborating</span></div></div>
+  <div class="it"><div class="d">2024-11</div><div class="h">Mobile ALOHA / HumanPlus / UMI on Legs</div><div class="b">Three papers at the same CoRL. Zipeng Fu is co-first author on two of them and contributes to UMI on Legs.<span class="bd bd-c">Corroborating</span></div></div>
+  <div class="it"><div class="d">2025</div><div class="h">Reward AI founded</div><div class="b">LinkedIn company page lists Founded 2025; Chen Wang finishes his Stanford CS PhD in 2025-06.<span class="bd bd-o">Official</span></div></div>
+  <div class="it hi"><div class="d">2026-09-14</div><div class="h">Out of stealth, OM-1 launches</div><div class="b">Website + official X/LinkedIn simultaneous launch; the full Omnibody stack and 9 demos revealed; NVIDIA's Jim Fan comments "So smooth"; X post &gt;2000 likes.<span class="bd bd-o">Official</span><span class="bd bd-c">Corroborating</span></div></div>
+  <div class="it"><div class="d">Unannounced (officially teased)</div><div class="h">Quadmanual → mixed robot teams; humanoid whole-body manipulation and navigation</div><div class="b">Official words: "beginning with quadmanual manipulation … and extending to mixed teams that read each other's intent, hand off objects, divide roles, and recover together"; "OM-1 can power humanoids to do whole-body manipulation and navigation. <b>More on this later.</b>"<span class="bd bd-o">Official</span></div></div>
+</div>
+
+<!-- ============ 五、商业化 ============ -->
+<h2 class="sec-biz"><span class="num">05</span>Commercialization: Strategy and Status</h2>
+
+<h3>5.1 Status: confirmed facts</h3>
+
+<div class="tw">
+<table>
+  <tr><th style="width:120px">Dimension</th><th>Status</th><th style="width:84px">Type</th></tr>
+  <tr><td>Funding</td><td><b>Entirely undisclosed</b> — no amount, round, or investors. Third-party industry newsletters explicitly note that "as of this launch, Reward's website has not disclosed funding amount or investors"</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>Customers / deployments</td><td>No customer names, deployment counts, or pilots disclosed</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>Pricing / timeline</td><td>No commercialization timeline, no pricing</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>Openness strategy</td><td>Model weights, code, datasets, and API all kept in-house; no papers published; the official citation format is "blog article"</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>Team size</td><td>11–50 people; the hiring address careers@rewardai.com sits in a prominent spot on the site</td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>Body partnerships</td><td>No hardware makers named in public materials. One unverified third-party lead points to a Flexiv Rizon arm participating in demos — <b>could not be double-checked</b></td><td><span class="bd bd-i">Inference · unverified</span></td></tr>
+</table>
+</div>
+
+<h3>5.2 Strategic signals: reading between the official lines</h3>
+
+<div class="tw">
+<table>
+  <tr><th style="width:220px">Official wording (verbatim)</th><th>Reading</th><th style="width:84px">Type</th></tr>
+  <tr>
+    <td><i>"Efficiency is ROI. ROI is what gets robots deployed."</i></td>
+    <td>Defines "efficiency" directly as return on investment. This is not a researcher's phrasing — it is phrasing for selling to factories</td><td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td><i>"If other models look faster, check the corner of the frame: 2x, sometimes 5x."</i></td>
+    <td>Proactively raises the "speed faking" issue and turns 1× speed into a brand asset. Aggressive positioning</td><td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td><i>"Every clip we publish runs at 1x speed, clearly labeled."</i></td>
+    <td>Same theme, written into the About page's methodology section — not improvised PR talk</td><td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td><i>"can be dropped onto whatever robots already <b>stand on a customer's floor</b>"</i></td>
+    <td><b>They don't sell robots.</b> The target customer is the factory / integrator that already bought robots — upgrading installed equipment rather than selling new hardware</td><td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td><i>"A robot earns its place in a factory, a kitchen, or a warehouse …"</i></td>
+    <td>Target scenes: factories, kitchens, warehouses. Consistent with the demo tasks (3C packaging, conveyor sorting, laundry folding, bartending)</td><td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td><i>"beginning with quadmanual manipulation … extending to mixed teams"</i></td>
+    <td>Multi-robot cooperation as the differentiation narrative: aiming at work a single arm can't do (moving furniture, large-assembly, peak-hour kitchens)</td><td><span class="bd bd-o">Official</span></td>
+  </tr>
+  <tr>
+    <td><i>"demonstrations we collect today will still be training robot bodies that haven't been designed yet"</i></td>
+    <td>Data-as-asset: data doesn't depreciate with hardware generations — it <b>appreciates</b>. A dual narrative aimed at investors and customers alike</td><td><span class="bd bd-o">Official</span></td>
+  </tr>
+</table>
+</div>
+
+<h3>5.3 Inferred commercialization path</h3>
+
+<div class="box">
+  <div class="t">This report's judgment (<span class="bd bd-i">Inference</span>, not officially confirmed)</div>
+  <p><b>Most likely path: B2B — deploying/licensing "policy + control layer" to customers that already operate robot fleets, possibly renting or selling Omnibody Hand capture devices for on-site task-data collection.</b> The reasoning chain:</p>
+  <ol style="margin:6px 0">
+    <li>Closed source, no API → rules out the "community standard / ecosystem platform" route; value capture must happen at the delivery step.</li>
+    <li>"Drop onto whatever robots already stand on a customer's floor" → explicitly no robot-making, so revenue cannot come from complete hardware units — only from software capability + capture devices.</li>
+    <li>"Efficiency is ROI" + repeated emphasis on takt time → the selling point is hourly output replacing human labor; pricing is likely per deployed site / per robot, not per token or per API call.</li>
+    <li>Hiring address pinned + 11–50 headcount + just out of stealth → in a "build delivery capability" phase rather than a "build sales network" phase; near-term, a few deep pilots are more likely than a broad rollout.</li>
+  </ol>
+  <p style="margin-top:8px"><b>Core moat:</b> not the model itself, but the closed loop of "<b>capture device — data interface — control layer</b>". Remove any one link and cross-embodiment degrades into an ordinary VLA. Which also means: their moat depends heavily on the manufacturability and cost of Omnibody Hand — precisely the thinnest part of the public record.</p>
+</div>
+
+<h3>5.4 Competitive landscape</h3>
+
+<div class="tw">
+<table>
+  <tr><th style="width:130px">Route</th><th style="width:170px">Representative companies</th><th>Data entry point</th><th style="width:84px">Type</th></tr>
+  <tr>
+    <td><b>Wearable human-hand capture</b><br>(Reward's route)</td>
+    <td><b>Reward AI</b></td>
+    <td>7-DoF functional hand + tactile/proximity/force + EM tracking; a <b>functional middle path</b> — more expressive than 2-DoF, more decoupled than 20+ DoF isomorphism</td><td><span class="bd bd-o">Official</span><span class="bd bd-c">Corroborating</span></td>
+  </tr>
+  <tr>
+    <td>Same route · closest competitor</td>
+    <td>Sunday Robotics<br>(Tony Zhao + Cheng Chi)</td>
+    <td>Skill Capture Glove: a simpler 2-DoF parallel-jaw design; emphasizes the <b>geometric and sensor correspondence</b> between the glove and their in-house Memo robot hand; focused on chores (laundry folding)</td><td><span class="bd bd-c">Corroborating</span></td>
+  </tr>
+  <tr>
+    <td>Strict isomorphism route</td>
+    <td>X Square Robot (Shenzhen)</td>
+    <td>TwinDEX: a 9-DoF exoskeleton that eliminates the embodiment gap through <b>strict physical isomorphism</b> with the matching three-finger robot hand</td><td><span class="bd bd-c">Corroborating</span></td>
+  </tr>
+  <tr>
+    <td>Internet-video pretraining</td>
+    <td>Dyna Robotics (Dyna-2)<br>Rhoda AI (DVA)</td>
+    <td>Massive web/human-video pretraining + task-data post-training. Rhoda reports its largest model completing tasks unassisted within 100 s at 84.7%</td><td><span class="bd bd-c">Corroborating</span></td>
+  </tr>
+  <tr>
+    <td>VLA / foundation models</td>
+    <td>Physical Intelligence (π0)<br>Gemini Robotics 1.5 / 2<br>Skild AI (S1), Generalist (GEN-1.5)</td>
+    <td>Open robot datasets + teleoperation + synthetic data mixes. Gemini Robotics 2 claims adaptation to a new bimanual robot with a few hours and usually &lt;200 samples</td><td><span class="bd bd-c">Corroborating</span></td>
+  </tr>
+  <tr>
+    <td>Data infrastructure</td>
+    <td>XDOF (GELLO lineage), Mecka AI</td>
+    <td>Capture/cleaning/labeling/QC outsourced as a service; XDOF disclosed $70M in funding in June and open-sourced ABC-130K (130k bimanual trajectories / 195 task classes)</td><td><span class="bd bd-c">Corroborating</span></td>
+  </tr>
+</table>
+</div>
+
+<!-- ============ 六、风险 ============ -->
+<h2 class="sec-risk"><span class="num">06</span>Key Risks and Watchlist</h2>
+
+<div class="box warn">
+  <div class="t">Seven risks</div>
+  <ol style="margin:6px 0">
+    <li><b>Every performance metric is company self-tested.</b> The only quantified figure (24.9 → 9.5 mm) measures <b>capture-side tracking error</b>, not task success rate. Third parties (Humanoids Daily, humanoid.guide) both note explicitly: no large-scale success-rate data, no papers, no open source.<span class="bd bd-c">Corroborating</span></li>
+    <li><b>The boundary of "Any Body" needs clarifying.</b> Official video <code>aria-label</code>s show that the humanoid and the industrial arms in the cross-embodiment demo <b>both wear Omnibody Hands</b>. If "zero-shot cross-embodiment" presupposes mounting the same hand, its scope differs from "plug-and-play on any robot". This is the question most worth putting to the company.<span class="bd bd-o">Official material</span><span class="bd bd-i">Inference</span></li>
+    <li><b>No third-party replication path.</b> Weights, code, datasets, API all closed; outsiders cannot verify independently.<span class="bd bd-c">Corroborating</span></li>
+    <li><b>Opaque funding.</b> No amount, no investors — runway and compute access cannot be assessed. In a field where "compute is the moat", this is a major information gap.<span class="bd bd-c">Corroborating</span></li>
+    <li><b>"&lt;30 minutes" is easy to misread.</b> Third-party newsletters specifically clarify: it refers to the <b>amount of demonstration data</b>, not end-to-end training time.<span class="bd bd-c">Corroborating</span></li>
+    <li><b>Long-run operational stability unverified.</b> The industry benchmark is "99.9% uptime", and between lab demos and continuous production runs lies a long road — the core of the public challenge to "demo culture" from Skild AI and others.<span class="bd bd-c">Corroborating</span></li>
+    <li><b>Capture-device scaling unverified.</b> Omnibody Hand integrates 7-DoF mechanisms, tactile arrays, proximity sensing, a global-shutter camera, and EM tracking — its cost, yield, durability, and calibration process are the physical bottleneck for scaling the entire route, and the company discloses nothing about them.<span class="bd bd-i">Inference</span></li>
+  </ol>
+</div>
+
+<h4>Watchlist for the next 3–12 months</h4>
+<ul>
+  <li>Whether they publish a paper or a full technical report (the citation format today is still a blog article)</li>
+  <li>Whether standardized success rates and failure cases appear (not just demo videos)</li>
+  <li>Whether third-party testing, customer deployments, or pilots are disclosed</li>
+  <li>Whether funding amount and investors are disclosed</li>
+  <li>Whether API / weights / datasets open up</li>
+  <li>Follow-ups on quadmanual cooperation and humanoid whole-body manipulation + navigation (officially teased: "More on this later")</li>
+  <li>Whether Omnibody Hand is ever offered externally (sold / rented / open-sourced)</li>
+</ul>
+
+<!-- ============ 附录 ============ -->
+<h2 class="sec-source"><span class="num">07</span>Appendix: Key Sources at a Glance</h2>
+
+<div class="tw">
+<table>
+  <tr><th style="width:44px">#</th><th style="width:230px">Source</th><th>URL</th><th style="width:60px">Type</th></tr>
+  <tr><td>S04</td><td>OM-1 technical blog post (primary source)</td><td><a href="https://www.rewardai.com/blog/OM-1/" target="_blank" rel="noopener">rewardai.com/blog/OM-1/</a></td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>S02</td><td>About us (signed by the CEO)</td><td><a href="https://www.rewardai.com/about/" target="_blank" rel="noopener">rewardai.com/about/</a></td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>S11</td><td>Zipeng Fu's launch post</td><td><a href="https://www.linkedin.com/posts/zipengfu_introducing-reward-ai-om-1-our-first-robot-activity-7505325034253660160-QOds" target="_blank" rel="noopener">LinkedIn · zipengfu</a></td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>S12</td><td>Zipeng Fu's personal site / CV</td><td><a href="https://zipengfu.github.io/" target="_blank" rel="noopener">zipengfu.github.io</a></td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>S14</td><td>Chen Wang's personal site</td><td><a href="https://www.chenwangjeremy.net" target="_blank" rel="noopener">chenwangjeremy.net</a></td><td><span class="bd bd-o">Official</span></td></tr>
+  <tr><td>S16</td><td>DexCap (RSS 2024) project page</td><td><a href="https://dex-cap.github.io/" target="_blank" rel="noopener">dex-cap.github.io</a></td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>S24</td><td>UMI (RSS 2024) project page</td><td><a href="https://umi-gripper.github.io/" target="_blank" rel="noopener">umi-gripper.github.io</a></td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>S35</td><td>Humanoids Daily · stealth-exit coverage</td><td><a href="https://www.humanoidsdaily.com/news/reward-ai-exits-stealth-with-om-1-pitching-zero-shot-human-to-robot-manipulation" target="_blank" rel="noopener">humanoidsdaily.com</a></td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>S36</td><td>RuntimeWire · OM-1 launch</td><td><a href="https://runtimewire.com/article/reward-ai-om-1-robot-foundation-model-human-data" target="_blank" rel="noopener">runtimewire.com</a></td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>S42</td><td>Tencent News · new model from the Mobile ALOHA authors</td><td><a href="https://new.qq.com/rain/a/20260916A05H9Q00" target="_blank" rel="noopener">new.qq.com</a></td><td><span class="bd bd-c">Corroborating</span></td></tr>
+  <tr><td>S44</td><td>SOURCEMIND · North American embodied-AI company list</td><td>Industry newsletter (explicitly notes funding is undisclosed)</td><td><span class="bd bd-c">Corroborating</span></td></tr>
+</table>
+</div>
+
+<footer>
+  Report compiled: 2026-09-19 ｜ Research basis: public information (official website / official social media / academic papers and project pages / third-party media)<br>
+  Items marked <span class="bd bd-o">Official</span> come from Reward AI's official channels or founder-signed content; items marked <span class="bd bd-c">Corroborating</span> come from academic papers, project pages, or third-party media/records; items marked <span class="bd bd-i">Inference</span> are this report's own reasoning from the above materials, not officially confirmed.<br>
+  This report does not constitute investment advice. Until independently replicated by a third party, all performance data should be treated as company self-reports.
+</footer>
+
+</div>
+</div>

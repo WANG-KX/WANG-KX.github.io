@@ -29,6 +29,70 @@ FOOTER_RE = re.compile(
     r'\s*<p style="text-align:center;font-size:12\.5px;color:#9aa0a8;[^>]*>生成于[^<]*</p>\s*'
 )
 
+STYLE_RE = re.compile(r"<style[^>]*>(.*?)</style>", re.S)
+# 部分文档（如深度调研报告）样式集中在 <head><style>、正文靠 class；
+# 嵌入博客后需把样式限定在一个包裹层内，避免 html/body/h2 等全局选择器污染整站。
+DOC_SCOPE = "wd-doc"
+
+
+def scope_css(css: str, scope: str) -> str:
+    """把 CSS 的所有选择器限定到 scope 下（:root/html/body 映射到 scope 本身）。
+
+    支持嵌套的 @media/@supports；@keyframes 等其他 at-rule 原样保留。
+    """
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+
+    def prefix_sel(sel: str) -> str:
+        s = sel.strip()
+        if not s:
+            return ""
+        if s in (":root", "html", "body"):
+            return scope
+        if s == "*":
+            return f"{scope}, {scope} *"
+        return f"{scope} {s}"
+
+    def prefix_rules(block: str) -> str:
+        def repl(m: re.Match) -> str:
+            sels = ", ".join(
+                p for p in (prefix_sel(x) for x in m.group(1).split(",")) if p
+            )
+            return f"{sels}{{{m.group(2)}}}"
+
+        return re.sub(r"([^{}]+)\{([^{}]*)\}", repl, block)
+
+    out, i, n = [], 0, len(css)
+    while i < n:
+        m = re.compile(r"@([\w-]+)[^{]*\{").search(css, i)
+        if not m:
+            out.append(prefix_rules(css[i:]))
+            break
+        if m.start() > i:
+            out.append(prefix_rules(css[i : m.start()]))
+        depth, j = 1, m.end()
+        while j < n and depth:
+            if css[j] == "{":
+                depth += 1
+            elif css[j] == "}":
+                depth -= 1
+            j += 1
+        inner = css[m.end() : j - 1]
+        if m.group(1) in ("media", "supports"):  # 内容仍是规则集，递归处理
+            head = re.match(r"@[\w-]+[^{]*", m.group(0)).group(0)
+            out.append(f"{head}{{{scope_css(inner, scope)}}}")
+        else:  # @keyframes 等：内部不是选择器，原样保留
+            out.append(css[i:j])
+        i = j
+    return "".join(out)
+
+
+def extract_styled_body(html: str) -> str:
+    """带头部样式的文档：返回「作用域 <style> + 包裹层正文」，正文仍走通用清洗。"""
+    css = STYLE_RE.search(html)
+    body = extract_body(html)
+    scoped = scope_css(css.group(1), f".{DOC_SCOPE}")
+    return f'<style scoped>\n{scoped}\n</style>\n\n<div class="{DOC_SCOPE}">\n{body}\n</div>'
+
 
 def extract_title(html: str) -> str | None:
     m = re.search(r"<title>(.*?)</title>", html, re.S)
@@ -128,8 +192,39 @@ def cmd_add(args: argparse.Namespace) -> None:
         f'excerpt: "{yq(excerpt)}"\n'
         "---\n\n"
     )
-    dst.write_text(fm + extract_body(html) + "\n", encoding="utf-8")
+
+    content = extract_styled_body(html) if STYLE_RE.search(html) else extract_body(html)
+    if args.assets:
+        src_dir, url_base = args.assets.split(":", 1)
+        src_dir = Path(src_dir)
+        if not src_dir.is_absolute():  # 相对路径基于源文件所在目录
+            src_dir = f.parent / src_dir
+        content = copy_assets(content, src_dir, url_base)
+    dst.write_text(fm + content + "\n", encoding="utf-8")
     print(f"已写入 {dst}")
+
+
+def copy_assets(content: str, src_dir: Path, url_base: str) -> str:
+    """把正文里引用的本地资源复制到博客 assets/，并改写引用路径。
+
+    url_base 形如 /assets/posts/2026-09-19-<slug>（站点根相对路径）。
+    """
+    if not src_dir.is_dir():
+        sys.exit(f"错误：资源目录不存在：{src_dir}")
+    dst_root = POSTS.parent / url_base.strip("/")
+    n = 0
+    for f in sorted(src_dir.iterdir()):
+        if not f.is_file():
+            continue
+        ref = f'"{src_dir.name}/{f.name}"'
+        if ref not in content:
+            continue
+        dst_root.mkdir(parents=True, exist_ok=True)
+        (dst_root / f.name).write_bytes(f.read_bytes())
+        content = content.replace(ref, f'"{url_base.rstrip("/")}/{f.name}"')
+        n += 1
+    print(f"已复制 {n} 个资源文件到 {dst_root}")
+    return content
 
 
 def main() -> None:
@@ -142,6 +237,11 @@ def main() -> None:
     add.add_argument("--title", help="覆盖自动提取的标题")
     add.add_argument("--date", help="覆盖自动提取的日期 (YYYY-MM-DD)")
     add.add_argument("--excerpt", help="摘要；缺省用「顶层结论」草稿")
+    add.add_argument(
+        "--assets",
+        help="本地资源映射 <源目录>:<站点URL前缀>（如 gifs:/assets/posts/2026-09-19-<slug>），"
+        "会把正文引用的文件复制到博客 assets/ 并改写路径",
+    )
     args = parser.parse_args()
     cmd_list() if args.cmd == "list" else cmd_add(args)
 

@@ -22,7 +22,9 @@ import sys
 from pathlib import Path
 
 SRC_ROOT = Path("/Users/wang/WorkBuddy/播客-视频-总结文档")
-POSTS = Path(os.environ.get("BLOG_POSTS_DIR", "/Users/wang/Documents/code/WANG-KX.github.io/_posts"))
+# AI 总结单独放在 _posts/ai-summaries/ 子目录，与手工博客（_posts/ 根目录）隔离开。
+BLOG_ROOT = Path(os.environ.get("BLOG_ROOT", "/Users/wang/Documents/code/WANG-KX.github.io"))
+POSTS = BLOG_ROOT / "_posts" / "ai-summaries"
 TAG = "AI 总结"
 
 FOOTER_RE = re.compile(
@@ -211,7 +213,7 @@ def copy_assets(content: str, src_dir: Path, url_base: str) -> str:
     """
     if not src_dir.is_dir():
         sys.exit(f"错误：资源目录不存在：{src_dir}")
-    dst_root = POSTS.parent / url_base.strip("/")
+    dst_root = BLOG_ROOT / url_base.strip("/")
     n = 0
     for f in sorted(src_dir.iterdir()):
         if not f.is_file():

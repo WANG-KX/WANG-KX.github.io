@@ -5,7 +5,7 @@ description: 扫描 /Users/wang/WorkBuddy/播客-视频-总结文档 下的播�
 
 # 同步 AI 总结到个人博客
 
-把 WorkBuddy 里的播客/视频总结（公众号版 HTML）逐篇确认后转成本仓库 `_posts/` 下的 Jekyll post。
+把 WorkBuddy 里的播客/视频总结（公众号版 HTML）逐篇确认后转成本仓库 `_posts/ai-summaries/` 下的 Jekyll post（AI 总结单独放这个子目录，与 `_posts/` 根目录的手工博客隔离开）。
 所有转换规则已封装在脚本 `sync.py`（与本 skill 同目录）中，不要手写 HTML 转换逻辑。
 
 ## 1. 扫描
@@ -20,7 +20,7 @@ python3 /Users/wang/Documents/code/WANG-KX.github.io/.claude/skills/ai-summary-s
 - `title`：文章标题（已自动去掉「深度报告」字样）
 - `date`：日期，取文档内「生成于」日期
 - `draft_excerpt`：「顶层结论」段落纯文本，作为摘要草稿
-- `synced`：`true` 表示该标题的文章已收录在 `_posts/`，**直接跳过**
+- `synced`：`true` 表示该标题的文章已收录在 `_posts/ai-summaries/`，**直接跳过**
 
 若没有 `synced == false` 的项，告诉用户"没有新文章"并结束。
 若目录里根本没有 `*_公众号版.html`，同样如实告知。
